@@ -57,9 +57,11 @@ with app.app_context():
     from routes import main_bp
     from auth import auth_bp
     from chatbot import chatbot_bp
+    from payment import payment_bp
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(chatbot_bp)
+    app.register_blueprint(payment_bp, url_prefix='/payment')
     
     # User loader for Flask-Login
     @login_manager.user_loader
