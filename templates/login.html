@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Login - Opt-AI{% endblock %}
+{% block title %}{{ _('auth.login') }} - {{ _('general.app_name') }}{% endblock %}
 
 {% block content %}
 <div class="container py-5">
@@ -9,16 +9,16 @@
             <div class="card shadow-sm">
                 <div class="card-body p-4 p-md-5">
                     <div class="text-center mb-4">
-                        <h2 class="fw-bold">Login to Opt-AI</h2>
-                        <p class="text-muted">Access your SEO analysis dashboard</p>
+                        <h2 class="fw-bold">{{ _('auth.login') }}</h2>
+                        <p class="text-muted">{{ _('dashboard.welcome') }}</p>
                     </div>
                     
                     <form method="POST" action="{{ url_for('auth.login') }}">
                         {{ form.hidden_tag() }}
                         
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            {{ form.email(class="form-control", placeholder="Enter your email") }}
+                            <label for="email" class="form-label">{{ _('auth.email') }}</label>
+                            {{ form.email(class="form-control", placeholder=_('auth.email')) }}
                             {% if form.email.errors %}
                                 <div class="invalid-feedback d-block">
                                     {% for error in form.email.errors %}
@@ -29,8 +29,8 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            {{ form.password(class="form-control", placeholder="Enter your password") }}
+                            <label for="password" class="form-label">{{ _('auth.password') }}</label>
+                            {{ form.password(class="form-control", placeholder=_('auth.password')) }}
                             {% if form.password.errors %}
                                 <div class="invalid-feedback d-block">
                                     {% for error in form.password.errors %}
@@ -43,7 +43,7 @@
                         <div class="mb-4 form-check">
                             {{ form.remember_me(class="form-check-input") }}
                             <label class="form-check-label" for="remember_me">
-                                Remember me
+                                {{ _('auth.remember_me') }}
                             </label>
                         </div>
                         
@@ -53,19 +53,19 @@
                     </form>
                     
                     <div class="mt-4 text-center">
-                        <p>Don't have an account? <a href="{{ url_for('auth.register') }}" class="text-decoration-none">Register</a></p>
+                        <p>{{ _('auth.no_account') }} <a href="{{ url_for('auth.register') }}" class="text-decoration-none">{{ _('auth.register_now') }}</a></p>
                     </div>
                 </div>
             </div>
             
             <div class="card mt-4 shadow-sm">
                 <div class="card-body p-4">
-                    <h5 class="fw-bold">Why choose Opt-AI?</h5>
+                    <h5 class="fw-bold">{{ _('general.app_name') }}</h5>
                     <ul class="mb-0">
-                        <li>AI-powered SEO analysis</li>
-                        <li>Actionable recommendations</li>
-                        <li>Track your SEO improvements</li>
-                        <li>Priority support for premium users</li>
+                        <li>{{ _('general.slogan') }}</li>
+                        <li>{{ _('report.recommendations') }}</li>
+                        <li>{{ _('dashboard.seo_performance') }}</li>
+                        <li>{{ _('pricing.premium_plan') }}</li>
                     </ul>
                 </div>
             </div>
