@@ -1,0 +1,452 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - Opt-AI{% endblock %}
+
+{% block head %}
+<meta name="description" content="Manage your Opt-AI account settings and subscription.">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Profile Header -->
+    <div class="mb-4">
+        <h1 class="fw-bold">Account Profile</h1>
+        <p class="text-muted">Manage your account settings and subscription</p>
+    </div>
+    
+    <div class="row">
+        <!-- Left Column - Account Info -->
+        <div class="col-lg-4 mb-4">
+            <!-- Account Information -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">Account Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="avatar mb-3 mx-auto">
+                            <span class="avatar-text">{{ current_user.username[0]|upper }}</span>
+                        </div>
+                        <h5>{{ current_user.username }}</h5>
+                        <p class="text-muted mb-0">{{ current_user.email }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Member Since</label>
+                        <div>{{ current_user.created_at.strftime('%B %d, %Y') }}</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Subscription Status</label>
+                        <div class="d-flex align-items-center">
+                            <span class="badge rounded-pill bg-{{ 'primary' if current_user.subscription_status != 'free' else 'secondary' }} me-2 text-capitalize">
+                                {{ current_user.subscription_status }}
+                            </span>
+                            {% if current_user.subscription_status != 'free' and current_user.subscription_ends_at %}
+                            <span class="small text-muted">Renews: {{ current_user.subscription_ends_at.strftime('%b %d, %Y') }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                            <i class="fas fa-user-edit me-1"></i> Edit Profile
+                        </button>
+                        <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                            <i class="fas fa-key me-1"></i> Change Password
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Links -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">Quick Links</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <a href="/dashboard" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                        </a>
+                        <a href="/analyze" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <i class="fas fa-search me-2"></i> New Analysis
+                        </a>
+                        <a href="/pricing" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <i class="fas fa-tag me-2"></i> Subscription Plans
+                        </a>
+                        <button id="delete-account-btn" class="list-group-item list-group-item-action d-flex align-items-center text-danger">
+                            <i class="fas fa-trash-alt me-2"></i> Delete Account
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column - Subscription & Usage -->
+        <div class="col-lg-8">
+            <!-- Subscription Details -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Subscription Details</h5>
+                    <a href="/pricing" class="btn btn-sm btn-outline-primary">
+                        {{ 'Upgrade' if current_user.subscription_status == 'free' else 'Manage' }}
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if current_user.subscription_status == 'free' %}
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i> Free Plan</h6>
+                        <p class="mb-0">You're currently on the free plan. Upgrade to unlock more powerful SEO analysis features.</p>
+                    </div>
+                    <div class="text-center py-3">
+                        <a href="/pricing" class="btn btn-primary">View Pricing Plans</a>
+                    </div>
+                    {% else %}
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Current Plan</label>
+                                <div class="h5 text-capitalize">{{ current_user.subscription_status }}</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Billing Cycle</label>
+                                <div>Monthly</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Next Billing Date</label>
+                                <div>{{ current_user.subscription_ends_at.strftime('%B %d, %Y') }}</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Payment Method</label>
+                                <div>•••• •••• •••• 4242</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#updatePaymentModal">
+                            <i class="fas fa-credit-card me-1"></i> Update Payment Method
+                        </button>
+                        <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelSubscriptionModal">
+                            <i class="fas fa-times-circle me-1"></i> Cancel Subscription
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Usage Statistics -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">Usage Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <h6>Analyses This Month</h6>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 65%;" 
+                                     aria-valuenow="65" aria-valuemin="0" aria-valuemax="100">
+                                    13/20
+                                </div>
+                            </div>
+                            <div class="small text-muted mt-1">
+                                {% if current_user.subscription_status == 'free' %}
+                                7 analyses remaining this month
+                                {% else %}
+                                Unlimited analyses available
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <h6>AI Recommendations</h6>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 30%;" 
+                                     aria-valuenow="30" aria-valuemin="0" aria-valuemax="100">
+                                    6/20
+                                </div>
+                            </div>
+                            <div class="small text-muted mt-1">
+                                {% if current_user.subscription_status in ['premium', 'enterprise'] %}
+                                Unlimited AI recommendations available
+                                {% else %}
+                                Upgrade to Premium for AI recommendations
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="usage-chart-container" style="height: 300px;">
+                        <canvas id="usage-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payment History -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">Payment History</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Receipt</th>
+                                </tr>
+                            </thead>
+                            <tbody id="payment-history">
+                                <!-- Will be populated with JS or shown as empty -->
+                                {% if current_user.subscription_status != 'free' %}
+                                <tr>
+                                    <td>{{ (current_user.subscription_ends_at - timedelta(days=30)).strftime('%b %d, %Y') }}</td>
+                                    <td>{{ current_user.subscription_status|capitalize }} Plan - Monthly</td>
+                                    <td>
+                                        {% if current_user.subscription_status == 'basic' %}$19.00
+                                        {% elif current_user.subscription_status == 'premium' %}$49.00
+                                        {% elif current_user.subscription_status == 'enterprise' %}$149.00
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="badge bg-success">Paid</span></td>
+                                    <td><a href="#" class="btn btn-sm btn-outline-secondary">View</a></td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4">
+                                        <p class="mb-0">No payment history available</p>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-profile-form">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" value="{{ current_user.username }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="save-profile">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="change-password-form">
+                    <div class="mb-3">
+                        <label for="current_password" class="form-label">Current Password</label>
+                        <input type="password" class="form-control" id="current_password" name="current_password">
+                    </div>
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password">
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Confirm New Password</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="change-password">Update Password</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Payment Modal -->
+<div class="modal fade" id="updatePaymentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Payment Method</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> You will be redirected to our secure payment provider to update your payment method.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="update-payment">Continue</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Subscription Modal -->
+<div class="modal fade" id="cancelSubscriptionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cancel Subscription</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i> <strong>Are you sure you want to cancel?</strong>
+                </div>
+                <p>Your subscription will remain active until the end of your current billing period on {{ current_user.subscription_ends_at.strftime('%B %d, %Y') }}.</p>
+                <p>After cancellation, your account will be downgraded to the free plan with limited features.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Subscription</button>
+                <button type="button" class="btn btn-danger" id="confirm-cancel">Cancel Subscription</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i> <strong>Warning: This action cannot be undone!</strong>
+                </div>
+                <p>Deleting your account will permanently remove all of your data, including:</p>
+                <ul>
+                    <li>All analysis reports and history</li>
+                    <li>Account settings and preferences</li>
+                    <li>Subscription information</li>
+                </ul>
+                <div class="mb-3">
+                    <label for="delete_confirmation" class="form-label">Please type "DELETE" to confirm:</label>
+                    <input type="text" class="form-control" id="delete_confirmation">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirm-delete" disabled>Delete Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: var(--bs-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+    font-weight: bold;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/profile.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize usage chart
+    const ctx = document.getElementById('usage-chart').getContext('2d');
+    
+    // Sample data - in a real app this would come from an API
+    const usageData = {
+        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+        datasets: [
+            {
+                label: 'Analyses',
+                data: [5, 3, 2, 3],
+                backgroundColor: 'rgba(13, 110, 253, 0.5)',
+                borderColor: 'rgba(13, 110, 253, 1)',
+                borderWidth: 1
+            },
+            {
+                label: 'AI Recommendations',
+                data: [2, 1, 1, 2],
+                backgroundColor: 'rgba(25, 135, 84, 0.5)',
+                borderColor: 'rgba(25, 135, 84, 1)',
+                borderWidth: 1
+            }
+        ]
+    };
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: usageData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Count'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            }
+        }
+    });
+    
+    // Delete account button
+    document.getElementById('delete-account-btn').addEventListener('click', function() {
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteAccountModal'));
+        deleteModal.show();
+    });
+    
+    // Delete confirmation input
+    const deleteConfirmInput = document.getElementById('delete_confirmation');
+    const confirmDeleteBtn = document.getElementById('confirm-delete');
+    
+    deleteConfirmInput.addEventListener('input', function() {
+        confirmDeleteBtn.disabled = this.value !== 'DELETE';
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,353 @@
+{% extends 'base.html' %}
+
+{% block title %}Pricing Plans - Opt-AI{% endblock %}
+
+{% block head %}
+<meta name="description" content="Choose the perfect SEO analysis plan for your needs with Opt-AI's flexible pricing options.">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <h1 class="fw-bold mb-3">Choose Your Plan</h1>
+        <p class="lead text-muted max-w-prose mx-auto">Select the perfect plan for your SEO needs with flexible options to grow with your business</p>
+    </div>
+    
+    <!-- Pricing Cards -->
+    <div class="row g-4 mb-5">
+        <!-- Free Plan -->
+        <div class="col-lg-3 col-md-6">
+            <div class="card pricing-card h-100 shadow-sm">
+                <div class="card-body p-4 text-center">
+                    <h3 class="card-title fw-bold">Free</h3>
+                    <div class="my-4">
+                        <span class="price-value">$0</span>
+                        <span class="price-period">/month</span>
+                    </div>
+                    <p class="text-muted mb-4">Perfect for trying out our basic SEO analysis features</p>
+                    
+                    <ul class="feature-list text-start mb-4">
+                        <li>Meta Tags Analysis</li>
+                        <li>Basic Dashboard</li>
+                        <li>Up to 5 analyses per month</li>
+                        <li>Basic recommendations</li>
+                    </ul>
+                    
+                    <div class="d-grid">
+                        {% if current_user.is_authenticated and current_user.subscription_status == 'free' %}
+                        <button class="btn btn-outline-secondary" disabled>Current Plan</button>
+                        {% elif current_user.is_authenticated %}
+                        <button class="btn btn-outline-secondary" disabled>Downgrade Not Available</button>
+                        {% else %}
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary">Get Started</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Basic Plan -->
+        <div class="col-lg-3 col-md-6">
+            <div class="card pricing-card h-100 shadow-sm">
+                <div class="card-body p-4 text-center">
+                    <h3 class="card-title fw-bold">Basic</h3>
+                    <div class="my-4">
+                        <span class="price-value">$19</span>
+                        <span class="price-period">/month</span>
+                    </div>
+                    <p class="text-muted mb-4">Great for bloggers and small websites</p>
+                    
+                    <ul class="feature-list text-start mb-4">
+                        <li>Everything in Free</li>
+                        <li>Partial Content Analysis</li>
+                        <li>Up to 25 analyses per month</li>
+                        <li>Email reports</li>
+                        <li>Basic support</li>
+                    </ul>
+                    
+                    <div class="d-grid">
+                        {% if current_user.is_authenticated %}
+                            {% if current_user.subscription_status == 'basic' %}
+                            <button class="btn btn-outline-secondary" disabled>Current Plan</button>
+                            {% else %}
+                            <form action="{{ url_for('payment.create_checkout_session') }}" method="POST">
+                                <input type="hidden" name="plan" value="basic">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    {% if current_user.subscription_status == 'free' %}Upgrade{% else %}Switch{% endif %}
+                                </button>
+                            </form>
+                            {% endif %}
+                        {% else %}
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Sign Up</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Premium Plan -->
+        <div class="col-lg-3 col-md-6">
+            <div class="card pricing-card featured h-100 shadow-sm">
+                <div class="card-header text-center bg-primary text-white py-3">
+                    <h6 class="mb-0">Most Popular</h6>
+                </div>
+                <div class="card-body p-4 text-center">
+                    <h3 class="card-title fw-bold">Premium</h3>
+                    <div class="my-4">
+                        <span class="price-value">$49</span>
+                        <span class="price-period">/month</span>
+                    </div>
+                    <p class="text-muted mb-4">Perfect for businesses and marketing teams</p>
+                    
+                    <ul class="feature-list text-start mb-4">
+                        <li>Everything in Basic</li>
+                        <li>Complete Technical Analysis</li>
+                        <li>AI Recommendations</li>
+                        <li>Unlimited analyses</li>
+                        <li>Priority support</li>
+                        <li>Competitor analysis</li>
+                    </ul>
+                    
+                    <div class="d-grid">
+                        {% if current_user.is_authenticated %}
+                            {% if current_user.subscription_status == 'premium' %}
+                            <button class="btn btn-outline-secondary" disabled>Current Plan</button>
+                            {% else %}
+                            <form action="{{ url_for('payment.create_checkout_session') }}" method="POST">
+                                <input type="hidden" name="plan" value="premium">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    {% if current_user.subscription_status in ['free', 'basic'] %}Upgrade{% else %}Switch{% endif %}
+                                </button>
+                            </form>
+                            {% endif %}
+                        {% else %}
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Sign Up</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Enterprise Plan -->
+        <div class="col-lg-3 col-md-6">
+            <div class="card pricing-card h-100 shadow-sm">
+                <div class="card-body p-4 text-center">
+                    <h3 class="card-title fw-bold">Enterprise</h3>
+                    <div class="my-4">
+                        <span class="price-value">$149</span>
+                        <span class="price-period">/month</span>
+                    </div>
+                    <p class="text-muted mb-4">For agencies and large enterprise websites</p>
+                    
+                    <ul class="feature-list text-start mb-4">
+                        <li>Everything in Premium</li>
+                        <li>Deep AI Semantic Analysis</li>
+                        <li>Custom API access</li>
+                        <li>White-labeled reports</li>
+                        <li>Dedicated account manager</li>
+                        <li>Custom integrations</li>
+                    </ul>
+                    
+                    <div class="d-grid">
+                        {% if current_user.is_authenticated %}
+                            {% if current_user.subscription_status == 'enterprise' %}
+                            <button class="btn btn-outline-secondary" disabled>Current Plan</button>
+                            {% else %}
+                            <form action="{{ url_for('payment.create_checkout_session') }}" method="POST">
+                                <input type="hidden" name="plan" value="enterprise">
+                                <button type="submit" class="btn btn-primary w-100">Upgrade</button>
+                            </form>
+                            {% endif %}
+                        {% else %}
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Sign Up</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Feature Comparison -->
+    <div class="card shadow-sm mb-5">
+        <div class="card-header bg-transparent">
+            <h3 class="mb-0">Feature Comparison</h3>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Feature</th>
+                            <th class="text-center">Free</th>
+                            <th class="text-center">Basic</th>
+                            <th class="text-center">Premium</th>
+                            <th class="text-center">Enterprise</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">Meta Tags Analysis</th>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Partial Analysis</th>
+                            <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Complete Analysis</th>
+                            <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                            <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Deep AI Analysis</th>
+                            <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                            <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                            <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">AI Recommendations</th>
+                            <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                            <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Monthly Analyses</th>
+                            <td class="text-center">5</td>
+                            <td class="text-center">25</td>
+                            <td class="text-center">Unlimited</td>
+                            <td class="text-center">Unlimited</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Competitor Analysis</th>
+                            <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                            <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">API Access</th>
+                            <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                            <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                            <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Email Reports</th>
+                            <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Support</th>
+                            <td class="text-center">Community</td>
+                            <td class="text-center">Email</td>
+                            <td class="text-center">Priority</td>
+                            <td class="text-center">Dedicated</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FAQ Section -->
+    <div class="row mb-5">
+        <div class="col-lg-12">
+            <h3 class="fw-bold mb-4">Frequently Asked Questions</h3>
+            
+            <div class="accordion" id="pricingFaq">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOne">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            Can I switch plans at any time?
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#pricingFaq">
+                        <div class="accordion-body">
+                            Yes, you can upgrade or downgrade your plan at any time. When upgrading, you'll have immediate access to the new features. When downgrading, the change will take effect at the end of your current billing cycle.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingTwo">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            What payment methods do you accept?
+                        </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#pricingFaq">
+                        <div class="accordion-body">
+                            We accept all major credit cards (Visa, Mastercard, American Express, Discover) through our secure payment processor, Stripe. We do not store your payment information on our servers.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingThree">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                            Is there a contract or commitment?
+                        </button>
+                    </h2>
+                    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#pricingFaq">
+                        <div class="accordion-body">
+                            No, all of our plans are billed monthly with no long-term contract. You can cancel at any time and your subscription will end at the conclusion of your current billing cycle.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingFour">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                            Do you offer refunds?
+                        </button>
+                    </h2>
+                    <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#pricingFaq">
+                        <div class="accordion-body">
+                            We offer a 14-day money-back guarantee on all paid plans. If you're not satisfied with our service within the first 14 days, contact our support team for a full refund.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingFive">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                            Do you offer custom enterprise solutions?
+                        </button>
+                    </h2>
+                    <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#pricingFaq">
+                        <div class="accordion-body">
+                            Yes, for larger organizations with specific needs, we offer custom enterprise solutions beyond our standard Enterprise plan. Please contact our sales team at sales@opt-ai.com to discuss your requirements.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- CTA Section -->
+    <div class="text-center py-4">
+        <h3 class="fw-bold mb-3">Ready to optimize your SEO?</h3>
+        <p class="lead mb-4">Join thousands of businesses improving their search rankings with Opt-AI</p>
+        <div class="d-grid gap-2 d-md-block">
+            {% if current_user.is_authenticated %}
+            <a href="/analyze" class="btn btn-lg btn-primary px-5">Start Analyzing</a>
+            {% else %}
+            <a href="/register" class="btn btn-lg btn-primary px-5">Get Started</a>
+            <a href="#" class="btn btn-lg btn-outline-primary px-5">Contact Sales</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

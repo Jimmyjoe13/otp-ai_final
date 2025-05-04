@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}Analyze Your Website - Opt-AI{% endblock %}
+
+{% block head %}
+<meta name="description" content="Run an SEO analysis on your website with Opt-AI's powerful AI tools.">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">Analyze Your Website</h1>
+        <p class="lead text-muted">Get detailed SEO insights and actionable recommendations</p>
+    </div>
+    
+    <!-- Analysis Form -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form id="analysis-form" method="POST" action="{{ url_for('main.analyze') }}">
+                        <!-- URL Input -->
+                        <div class="mb-4">
+                            <label for="url-input" class="form-label fw-bold">Website URL</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-globe"></i></span>
+                                <input type="url" class="form-control form-control-lg" id="url-input" name="url" 
+                                       placeholder="https://example.com" required>
+                            </div>
+                            <div class="form-text text-danger" id="url-input-error"></div>
+                            <div class="form-text">Enter the full URL including https:// or http://</div>
+                        </div>
+                        
+                        <!-- Analysis Type Selection -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Analysis Type</label>
+                            <input type="hidden" name="analysis_type" id="analysis_type" value="meta">
+                            
+                            <div class="analysis-type-container">
+                                <button type="button" class="btn btn-primary analysis-type-btn active" data-type="meta">
+                                    <i class="fas fa-tags me-1"></i> Meta Tags
+                                </button>
+                                
+                                <button type="button" class="btn btn-outline-primary analysis-type-btn" data-type="partial">
+                                    <i class="fas fa-file-alt me-1"></i> Partial
+                                </button>
+                                
+                                <button type="button" class="btn btn-outline-primary analysis-type-btn" data-type="complete">
+                                    <i class="fas fa-search me-1"></i> Complete
+                                </button>
+                                
+                                <button type="button" class="btn btn-outline-primary analysis-type-btn" data-type="deep">
+                                    <i class="fas fa-brain me-1"></i> Deep AI
+                                </button>
+                            </div>
+                            
+                            <div class="alert alert-info mt-3">
+                                <p class="mb-0" id="analysis-description">Meta Tags Analysis checks your title, description, and meta tags for SEO best practices.</p>
+                            </div>
+                            
+                            <!-- Subscription Requirements Notice -->
+                            <div class="text-muted small mt-2">
+                                <p class="mb-0">
+                                    <strong>Free:</strong> Meta Tags Analysis<br>
+                                    <strong>Basic:</strong> Meta Tags + Partial Analysis<br>
+                                    <strong>Premium:</strong> Meta Tags + Partial + Complete Analysis<br>
+                                    <strong>Enterprise:</strong> All Analysis Types including Deep AI
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-rocket me-1"></i> Start Analysis
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Explanation Cards -->
+            <div class="row mt-4 g-4">
+                <!-- Meta Tags -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-tags text-primary me-2"></i> Meta Tags</h5>
+                            <p class="card-text small">Analyzes page titles, meta descriptions, and essential meta tags.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Partial -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-file-alt text-success me-2"></i> Partial</h5>
+                            <p class="card-text small">Includes meta tags plus headings, content structure, and images.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Complete -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-search text-info me-2"></i> Complete</h5>
+                            <p class="card-text small">Full analysis with technical factors like mobile-friendliness and speed.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Deep AI -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-brain text-warning me-2"></i> Deep AI</h5>
+                            <p class="card-text small">AI-powered semantic analysis for advanced content optimization.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loader-overlay" class="loader-overlay d-none">
+    <div class="loader-content">
+        <div class="spinner-border spinner-xl text-primary mb-3" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <h3>Analyzing your website...</h3>
+        <p>This may take a few moments</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/analyzer.js"></script>
+{% endblock %}

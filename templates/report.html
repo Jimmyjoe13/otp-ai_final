@@ -1,0 +1,406 @@
+{% extends 'base.html' %}
+
+{% block title %}SEO Report: {{ analysis.url }} - Opt-AI{% endblock %}
+
+{% block head %}
+<meta name="description" content="Detailed SEO analysis report for {{ analysis.url }}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Report Header -->
+    <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap">
+        <div>
+            <h1 class="fw-bold">SEO Report</h1>
+            <h5 class="text-muted text-break">{{ analysis.url }}</h5>
+            <div class="d-flex align-items-center mt-2">
+                <span class="badge rounded-pill bg-secondary me-2 text-capitalize">{{ analysis.analysis_type }}</span>
+                <span class="text-muted">
+                    <i class="fas fa-calendar-alt me-1"></i> {{ analysis.created_at.strftime('%B %d, %Y at %H:%M') }}
+                </span>
+            </div>
+        </div>
+        <div class="mt-3 mt-md-0">
+            <a href="/analyze" class="btn btn-outline-primary me-2">
+                <i class="fas fa-plus-circle me-1"></i> New Analysis
+            </a>
+            <a href="/dashboard" class="btn btn-outline-secondary">
+                <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <!-- Overall Score -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 text-center">
+                            {% set score_status = 'danger' if analysis.overall_score < 60 else ('warning' if analysis.overall_score < 80 else 'success') %}
+                            {% set score_label = 'Poor' if analysis.overall_score < 60 else ('Fair' if analysis.overall_score < 80 else 'Good') %}
+                            
+                            <div class="circular-score {{ score_status }}">
+                                <h1 class="display-1 fw-bold mb-0">{{ analysis.overall_score }}</h1>
+                                <div class="fs-5">out of 100</div>
+                            </div>
+                            <h4 class="mt-2 text-{{ score_status }}">{{ score_label }}</h4>
+                        </div>
+                        <div class="col-md-8">
+                            <h2 class="fw-bold mb-3">Overall SEO Health</h2>
+                            <div class="mb-3">
+                                <span class="fw-bold">Meta Score:</span>
+                                <div class="progress mt-1" style="height: 20px;">
+                                    {% set meta_class = 'bg-danger' if analysis.meta_score < 60 else ('bg-warning' if analysis.meta_score < 80 else 'bg-success') %}
+                                    <div class="progress-bar {{ meta_class }}" role="progressbar" style="width: {{ analysis.meta_score }}%;" 
+                                         aria-valuenow="{{ analysis.meta_score }}" aria-valuemin="0" aria-valuemax="100">
+                                        {{ analysis.meta_score }}%
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if analysis.content_score is not none %}
+                            <div class="mb-3">
+                                <span class="fw-bold">Content Score:</span>
+                                <div class="progress mt-1" style="height: 20px;">
+                                    {% set content_class = 'bg-danger' if analysis.content_score < 60 else ('bg-warning' if analysis.content_score < 80 else 'bg-success') %}
+                                    <div class="progress-bar {{ content_class }}" role="progressbar" style="width: {{ analysis.content_score }}%;" 
+                                         aria-valuenow="{{ analysis.content_score }}" aria-valuemin="0" aria-valuemax="100">
+                                        {{ analysis.content_score }}%
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if analysis.technical_score is not none %}
+                            <div class="mb-3">
+                                <span class="fw-bold">Technical Score:</span>
+                                <div class="progress mt-1" style="height: 20px;">
+                                    {% set tech_class = 'bg-danger' if analysis.technical_score < 60 else ('bg-warning' if analysis.technical_score < 80 else 'bg-success') %}
+                                    <div class="progress-bar {{ tech_class }}" role="progressbar" style="width: {{ analysis.technical_score }}%;" 
+                                         aria-valuenow="{{ analysis.technical_score }}" aria-valuemin="0" aria-valuemax="100">
+                                        {{ analysis.technical_score }}%
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI Recommendations (Premium/Enterprise) -->
+    {% if current_user.subscription_status in ['premium', 'enterprise'] and analysis.analysis_type in ['complete', 'deep'] %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="fas fa-robot me-2"></i> AI Recommendations</h4>
+        </div>
+        <div class="card-body p-4" id="ai-recommendations">
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Generating AI-powered recommendations...</p>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" id="analysis-id" value="{{ analysis.id }}">
+    {% endif %}
+    
+    <!-- Analysis Details -->
+    <div class="row g-4">
+        <!-- Meta Tags Section -->
+        <div class="col-md-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-transparent">
+                    <h4 class="mb-0"><i class="fas fa-tags me-2"></i> Meta Tags Analysis</h4>
+                </div>
+                <div class="card-body p-4">
+                    {% set meta_details = details|selectattr('category', 'equalto', 'meta')|list %}
+                    {% if meta_details %}
+                        <div class="row g-4">
+                            {% for detail in meta_details %}
+                                <div class="col-md-12">
+                                    <div class="issue-card p-3 mb-3 {{ detail.status }}">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <h5 class="mb-0">{{ detail.component|capitalize }}</h5>
+                                            <span class="badge rounded-pill bg-{{ 'success' if detail.status == 'good' else ('warning' if detail.status == 'warning' else 'danger') }}">
+                                                {{ detail.status|upper }}
+                                            </span>
+                                        </div>
+                                        <p>{{ detail.description }}</p>
+                                        {% if detail.recommendation %}
+                                            <div class="alert alert-info mb-0">
+                                                <i class="fas fa-lightbulb me-2"></i> <strong>Recommendation:</strong> {{ detail.recommendation }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> No meta tag details available.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Content Analysis Section -->
+        {% if analysis.analysis_type in ['partial', 'complete', 'deep'] %}
+        <div class="col-md-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-transparent">
+                    <h4 class="mb-0"><i class="fas fa-file-alt me-2"></i> Content Analysis</h4>
+                </div>
+                <div class="card-body p-4">
+                    {% set content_details = details|selectattr('category', 'equalto', 'content')|list %}
+                    {% if content_details %}
+                        <div class="row g-4">
+                            {% for detail in content_details %}
+                                <div class="col-md-12">
+                                    <div class="issue-card p-3 mb-3 {{ detail.status }}">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <h5 class="mb-0">{{ detail.component|capitalize|replace('_', ' ') }}</h5>
+                                            <span class="badge rounded-pill bg-{{ 'success' if detail.status == 'good' else ('warning' if detail.status == 'warning' else 'danger') }}">
+                                                {{ detail.status|upper }}
+                                            </span>
+                                        </div>
+                                        <p>{{ detail.description }}</p>
+                                        {% if detail.recommendation %}
+                                            <div class="alert alert-info mb-0">
+                                                <i class="fas fa-lightbulb me-2"></i> <strong>Recommendation:</strong> {{ detail.recommendation }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> No content analysis details available.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Technical Analysis Section -->
+        {% if analysis.analysis_type in ['complete', 'deep'] %}
+        <div class="col-md-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-transparent">
+                    <h4 class="mb-0"><i class="fas fa-cogs me-2"></i> Technical Analysis</h4>
+                </div>
+                <div class="card-body p-4">
+                    {% set tech_details = details|selectattr('category', 'equalto', 'technical')|list %}
+                    {% if tech_details %}
+                        <div class="row g-4">
+                            {% for detail in tech_details %}
+                                <div class="col-md-12">
+                                    <div class="issue-card p-3 mb-3 {{ detail.status }}">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <h5 class="mb-0">{{ detail.component|capitalize|replace('_', ' ') }}</h5>
+                                            <span class="badge rounded-pill bg-{{ 'success' if detail.status == 'good' else ('warning' if detail.status == 'warning' else 'danger') }}">
+                                                {{ detail.status|upper }}
+                                            </span>
+                                        </div>
+                                        <p>{{ detail.description }}</p>
+                                        {% if detail.recommendation %}
+                                            <div class="alert alert-info mb-0">
+                                                <i class="fas fa-lightbulb me-2"></i> <strong>Recommendation:</strong> {{ detail.recommendation }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> No technical analysis details available.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Next Steps -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-transparent">
+            <h4 class="mb-0"><i class="fas fa-forward me-2"></i> Next Steps</h4>
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="d-flex">
+                        <div class="me-3 text-primary">
+                            <i class="fas fa-sync-alt fa-2x"></i>
+                        </div>
+                        <div>
+                            <h5>Re-analyze</h5>
+                            <p class="mb-0">After making changes, run another analysis to track improvements.</p>
+                            <a href="/analyze" class="btn btn-sm btn-outline-primary mt-2">New Analysis</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex">
+                        <div class="me-3 text-success">
+                            <i class="fas fa-level-up-alt fa-2x"></i>
+                        </div>
+                        <div>
+                            <h5>Upgrade Plan</h5>
+                            <p class="mb-0">Get more detailed analysis with our premium plans.</p>
+                            <a href="/pricing" class="btn btn-sm btn-outline-success mt-2">View Plans</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex">
+                        <div class="me-3 text-info">
+                            <i class="fas fa-comments fa-2x"></i>
+                        </div>
+                        <div>
+                            <h5>Get AI Help</h5>
+                            <p class="mb-0">Use our AI assistant to get personalized advice.</p>
+                            <button class="btn btn-sm btn-outline-info mt-2" id="open-chat-bot">Ask Opty-bot</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.circular-score {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    border: 10px solid;
+}
+
+.circular-score.success {
+    border-color: var(--bs-success);
+}
+
+.circular-score.warning {
+    border-color: var(--bs-warning);
+}
+
+.circular-score.danger {
+    border-color: var(--bs-danger);
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/report.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle open chat bot button
+    const openChatButton = document.getElementById('open-chat-bot');
+    if (openChatButton) {
+        openChatButton.addEventListener('click', function() {
+            const chatToggle = document.getElementById('chat-toggle');
+            if (chatToggle) {
+                chatToggle.click();
+            }
+        });
+    }
+    
+    // Load AI recommendations if premium user
+    {% if current_user.subscription_status in ['premium', 'enterprise'] and analysis.analysis_type in ['complete', 'deep'] %}
+    const analysisId = document.getElementById('analysis-id').value;
+    const recommendationsContainer = document.getElementById('ai-recommendations');
+    
+    fetch(`/api/ai-recommendations/${analysisId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to load AI recommendations');
+            }
+            return response.json();
+        })
+        .then(data => {
+            let html = `
+                <div class="mb-4">
+                    <h5 class="fw-bold">Summary</h5>
+                    <p>${data.summary}</p>
+                </div>
+                
+                <div class="mb-4">
+                    <h5 class="fw-bold">Top Priorities</h5>
+                    <ul class="list-group">
+            `;
+            
+            // Add priorities
+            data.priorities.forEach(priority => {
+                html += `<li class="list-group-item"><i class="fas fa-arrow-right text-primary me-2"></i> ${priority}</li>`;
+            });
+            
+            html += `
+                    </ul>
+                </div>
+                
+                <div class="mb-4">
+                    <h5 class="fw-bold">Detailed Recommendations</h5>
+            `;
+            
+            // Add recommendations
+            data.recommendations.forEach(rec => {
+                html += `
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">${rec.title}</h6>
+                        </div>
+                        <div class="card-body">
+                            <p>${rec.description}</p>
+                            <h6>Action Steps:</h6>
+                            <ol>
+                `;
+                
+                rec.steps.forEach(step => {
+                    html += `<li>${step}</li>`;
+                });
+                
+                html += `
+                            </ol>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                </div>
+                
+                <div>
+                    <h5 class="fw-bold">Additional Insights</h5>
+                    <p>${data.insights}</p>
+                </div>
+            `;
+            
+            recommendationsContainer.innerHTML = html;
+        })
+        .catch(error => {
+            recommendationsContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i> Error loading AI recommendations: ${error.message}
+                    <button class="btn btn-outline-danger btn-sm mt-2" onclick="location.reload()">Try Again</button>
+                </div>
+            `;
+        });
+    {% endif %}
+});
+</script>
+{% endblock %}
