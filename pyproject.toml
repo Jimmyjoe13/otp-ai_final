@@ -16,4 +16,5 @@ dependencies = [
     "flask-jwt-extended>=4.7.1",
     "beautifulsoup4>=4.13.4",
     "requests>=2.32.3",
+    "trafilatura>=2.0.0",
 ]
