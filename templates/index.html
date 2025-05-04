@@ -164,9 +164,9 @@
         
         <div class="text-center mt-5 reveal-on-scroll">
             {% if current_user.is_authenticated %}
-            <a href="/analyze" class="btn btn-primary btn-lg">{{ 'homepage.analyze_now' | translate }}</a>
+            <a href="/analyze" class="btn btn-primary btn-lg">{{ _('homepage.analyze_now') }}</a>
             {% else %}
-            <a href="/register" class="btn btn-primary btn-lg">{{ 'homepage.get_started_free' | translate }}</a>
+            <a href="/register" class="btn btn-primary btn-lg">{{ _('homepage.get_started_free') }}</a>
             {% endif %}
         </div>
     </div>
@@ -176,8 +176,8 @@
 <section class="py-5">
     <div class="container">
         <div class="text-center mb-5 reveal-on-scroll">
-            <h2 class="fw-bold">{{ 'homepage.testimonials_title' | translate }}</h2>
-            <p class="lead text-muted">{{ 'homepage.testimonials_subtitle' | translate }}</p>
+            <h2 class="fw-bold">{{ _('homepage.testimonials_title') }}</h2>
+            <p class="lead text-muted">{{ _('homepage.testimonials_subtitle') }}</p>
         </div>
         
         <div class="row g-4">
@@ -194,14 +194,14 @@
                                 <i class="fas fa-star"></i>
                             </div>
                         </div>
-                        <p class="card-text">{{ 'homepage.testimonial1' | translate }}</p>
+                        <p class="card-text">{{ _('homepage.testimonial1') }}</p>
                         <div class="d-flex align-items-center mt-3">
                             <div class="rounded-circle bg-primary text-center text-white d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
                                 <span class="fw-bold">JD</span>
                             </div>
                             <div class="ms-3">
-                                <h6 class="mb-0">{{ 'homepage.testimonial1_name' | translate }}</h6>
-                                <small class="text-muted">{{ 'homepage.testimonial1_title' | translate }}</small>
+                                <h6 class="mb-0">{{ _('homepage.testimonial1_name') }}</h6>
+                                <small class="text-muted">{{ _('homepage.testimonial1_title') }}</small>
                             </div>
                         </div>
                     </div>
@@ -221,14 +221,14 @@
                                 <i class="fas fa-star"></i>
                             </div>
                         </div>
-                        <p class="card-text">{{ 'homepage.testimonial2' | translate }}</p>
+                        <p class="card-text">{{ _('homepage.testimonial2') }}</p>
                         <div class="d-flex align-items-center mt-3">
                             <div class="rounded-circle bg-success text-center text-white d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
                                 <span class="fw-bold">SM</span>
                             </div>
                             <div class="ms-3">
-                                <h6 class="mb-0">{{ 'homepage.testimonial2_name' | translate }}</h6>
-                                <small class="text-muted">{{ 'homepage.testimonial2_title' | translate }}</small>
+                                <h6 class="mb-0">{{ _('homepage.testimonial2_name') }}</h6>
+                                <small class="text-muted">{{ _('homepage.testimonial2_title') }}</small>
                             </div>
                         </div>
                     </div>
@@ -248,14 +248,14 @@
                                 <i class="fas fa-star-half-alt"></i>
                             </div>
                         </div>
-                        <p class="card-text">{{ 'homepage.testimonial3' | translate }}</p>
+                        <p class="card-text">{{ _('homepage.testimonial3') }}</p>
                         <div class="d-flex align-items-center mt-3">
                             <div class="rounded-circle bg-warning text-center text-white d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
                                 <span class="fw-bold">RJ</span>
                             </div>
                             <div class="ms-3">
-                                <h6 class="mb-0">{{ 'homepage.testimonial3_name' | translate }}</h6>
-                                <small class="text-muted">{{ 'homepage.testimonial3_title' | translate }}</small>
+                                <h6 class="mb-0">{{ _('homepage.testimonial3_name') }}</h6>
+                                <small class="text-muted">{{ _('homepage.testimonial3_title') }}</small>
                             </div>
                         </div>
                     </div>
@@ -269,14 +269,14 @@
 <section class="py-5 bg-primary text-white">
     <div class="container">
         <div class="text-center py-4 reveal-on-scroll">
-            <h2 class="fw-bold mb-3">{{ 'homepage.ready_to_optimize' | translate }}</h2>
-            <p class="lead mb-4">{{ 'homepage.start_improving' | translate }}</p>
+            <h2 class="fw-bold mb-3">{{ _('homepage.ready_to_optimize') }}</h2>
+            <p class="lead mb-4">{{ _('homepage.start_improving') }}</p>
             <div class="d-grid gap-2 d-md-flex justify-content-md-center">
                 {% if current_user.is_authenticated %}
-                <a href="/analyze" class="btn btn-light btn-lg px-5">{{ 'homepage.analyze_now' | translate }}</a>
+                <a href="/analyze" class="btn btn-light btn-lg px-5">{{ _('homepage.analyze_now') }}</a>
                 {% else %}
-                <a href="/register" class="btn btn-light btn-lg px-5">{{ 'homepage.sign_up_free' | translate }}</a>
-                <a href="/pricing" class="btn btn-outline-light btn-lg px-5">{{ 'homepage.see_pricing' | translate }}</a>
+                <a href="/register" class="btn btn-light btn-lg px-5">{{ _('homepage.sign_up_free') }}</a>
+                <a href="/pricing" class="btn btn-outline-light btn-lg px-5">{{ _('homepage.see_pricing') }}</a>
                 {% endif %}
             </div>
         </div>
