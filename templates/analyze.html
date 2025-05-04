@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
 
-{% block title %}Analyze Your Website - Opt-AI{% endblock %}
+{% block title %}{{ _('analyze.title') }} - {{ _('general.app_name') }}{% endblock %}
 
 {% block head %}
-<meta name="description" content="Run an SEO analysis on your website with Opt-AI's powerful AI tools.">
+<meta name="description" content="{{ _('analyze.meta_description') }}">
 {% endblock %}
 
 {% block content %}
 <div class="container py-4">
     <!-- Page Header -->
     <div class="text-center mb-5">
-        <h1 class="fw-bold">Analyze Your Website</h1>
-        <p class="lead text-muted">Get detailed SEO insights and actionable recommendations</p>
+        <h1 class="fw-bold">{{ _('analyze.analyze_website') }}</h1>
+        <p class="lead text-muted">{{ _('analyze.subtitle') }}</p>
     </div>
     
     <!-- Analysis Form -->

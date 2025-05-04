@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Register - Opt-AI{% endblock %}
+{% block title %}{{ _('auth.register') }} - {{ _('general.app_name') }}{% endblock %}
 
 {% block content %}
 <div class="container py-5">
@@ -9,16 +9,16 @@
             <div class="card shadow-sm">
                 <div class="card-body p-4 p-md-5">
                     <div class="text-center mb-4">
-                        <h2 class="fw-bold">Create an Account</h2>
-                        <p class="text-muted">Start optimizing your SEO with AI-powered analysis</p>
+                        <h2 class="fw-bold">{{ _('auth.create_account') }}</h2>
+                        <p class="text-muted">{{ _('auth.start_optimizing') }}</p>
                     </div>
                     
                     <form method="POST" action="{{ url_for('auth.register') }}">
                         {{ form.hidden_tag() }}
                         
                         <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            {{ form.username(class="form-control", placeholder="Choose a username") }}
+                            <label for="username" class="form-label">{{ _('auth.username') }}</label>
+                            {{ form.username(class="form-control", placeholder=_('auth.choose_username')) }}
                             {% if form.username.errors %}
                                 <div class="invalid-feedback d-block">
                                     {% for error in form.username.errors %}
@@ -29,8 +29,8 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            {{ form.email(class="form-control", placeholder="Enter your email") }}
+                            <label for="email" class="form-label">{{ _('auth.email') }}</label>
+                            {{ form.email(class="form-control", placeholder=_('auth.enter_email')) }}
                             {% if form.email.errors %}
                                 <div class="invalid-feedback d-block">
                                     {% for error in form.email.errors %}
@@ -41,8 +41,8 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            {{ form.password(class="form-control", placeholder="Create a password (min 8 characters)") }}
+                            <label for="password" class="form-label">{{ _('auth.password') }}</label>
+                            {{ form.password(class="form-control", placeholder=_('auth.create_password')) }}
                             {% if form.password.errors %}
                                 <div class="invalid-feedback d-block">
                                     {% for error in form.password.errors %}
@@ -53,8 +53,8 @@
                         </div>
                         
                         <div class="mb-4">
-                            <label for="confirm_password" class="form-label">Confirm Password</label>
-                            {{ form.confirm_password(class="form-control", placeholder="Confirm your password") }}
+                            <label for="confirm_password" class="form-label">{{ _('auth.confirm_password') }}</label>
+                            {{ form.confirm_password(class="form-control", placeholder=_('auth.confirm_your_password')) }}
                             {% if form.confirm_password.errors %}
                                 <div class="invalid-feedback d-block">
                                     {% for error in form.confirm_password.errors %}
@@ -70,25 +70,25 @@
                     </form>
                     
                     <div class="mt-4 text-center">
-                        <p>Already have an account? <a href="{{ url_for('auth.login') }}" class="text-decoration-none">Login</a></p>
+                        <p>{{ _('auth.already_have_account') }} <a href="{{ url_for('auth.login') }}" class="text-decoration-none">{{ _('auth.login') }}</a></p>
                     </div>
                     
                     <hr class="my-4">
                     
                     <div class="text-center">
-                        <p class="small text-muted">By creating an account, you agree to our <a href="#" class="text-decoration-none">Terms of Service</a> and <a href="#" class="text-decoration-none">Privacy Policy</a>.</p>
+                        <p class="small text-muted">{{ _('auth.agree_to_terms') }} <a href="#" class="text-decoration-none">{{ _('auth.terms_of_service') }}</a> {{ _('auth.and') }} <a href="#" class="text-decoration-none">{{ _('auth.privacy_policy') }}</a>.</p>
                     </div>
                 </div>
             </div>
             
             <div class="card mt-4 shadow-sm">
                 <div class="card-body p-4">
-                    <h5 class="fw-bold">Free Account Benefits</h5>
+                    <h5 class="fw-bold">{{ _('auth.free_account_benefits') }}</h5>
                     <ul class="mb-0">
-                        <li>Access to Meta Tags SEO analysis</li>
-                        <li>Dashboard to track your analyses</li>
-                        <li>Basic SEO recommendations</li>
-                        <li>Upgrade anytime for more advanced features</li>
+                        <li>{{ _('auth.benefit_meta_tags') }}</li>
+                        <li>{{ _('auth.benefit_dashboard') }}</li>
+                        <li>{{ _('auth.benefit_recommendations') }}</li>
+                        <li>{{ _('auth.benefit_upgrade') }}</li>
                     </ul>
                 </div>
             </div>

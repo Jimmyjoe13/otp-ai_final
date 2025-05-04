@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
 
-{% block title %}Pricing Plans - Opt-AI{% endblock %}
+{% block title %}{{ _('pricing.title') }} - {{ _('general.app_name') }}{% endblock %}
 
 {% block head %}
-<meta name="description" content="Choose the perfect SEO analysis plan for your needs with Opt-AI's flexible pricing options.">
+<meta name="description" content="{{ _('pricing.meta_description') }}">
 {% endblock %}
 
 {% block content %}
 <div class="container py-5">
     <!-- Header -->
     <div class="text-center mb-5">
-        <h1 class="fw-bold mb-3">Choose Your Plan</h1>
-        <p class="lead text-muted max-w-prose mx-auto">Select the perfect plan for your SEO needs with flexible options to grow with your business</p>
+        <h1 class="fw-bold mb-3">{{ _('pricing.choose_plan') }}</h1>
+        <p class="lead text-muted max-w-prose mx-auto">{{ _('pricing.subtitle') }}</p>
     </div>
     
     <!-- Pricing Cards -->
