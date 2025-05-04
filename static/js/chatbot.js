@@ -30,7 +30,10 @@ function initializeChatbot() {
     
     // If opening chat for first time, add welcome message
     if (!chatContainer.classList.contains('chat-hidden') && chatMessages.children.length === 0) {
-      addBotMessage("👋 Hi there! I'm Opty-bot, your SEO assistant. Ask me anything about SEO or how to improve your website's performance!");
+      // Get the welcome message from translations or use a default
+      const welcomeMessage = document.querySelector('meta[name="welcome-message"]')?.getAttribute('content') || 
+        "👋 Hi there! I'm Opty-bot, your SEO assistant. Ask me anything about SEO or how to improve your website's performance!";
+      addBotMessage(welcomeMessage);
     }
     
     // Focus input when opening
@@ -186,8 +189,10 @@ function getBotResponse(message) {
       // Remove loading message
       loadingMessage.remove();
       
-      // Add error message
-      addBotMessage(`I'm sorry, I encountered an error: ${error.message}. Please try again later.`);
+      // Add error message - get from meta or use default
+      const errorText = document.querySelector('meta[name="error-message"]')?.getAttribute('content') || 
+        `I'm sorry, I encountered an error: ${error.message}. Please try again later.`;
+      addBotMessage(errorText);
     });
 }
 

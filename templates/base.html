@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ _('general.app_name') }} - Premium SEO Analysis{% endblock %}</title>
     <meta name="description" content="{{ _('general.slogan') }}">
+    <meta name="welcome-message" content="{{ _('chatbot.welcome_message') }}">
+    <meta name="error-message" content="{{ _('errors.server_error') }}">
     
     <!-- Favicon -->
     <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
@@ -34,38 +36,54 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/">Home</a>
+                        <a class="nav-link" href="/">{{ _('navigation.home') }}</a>
                     </li>
                     {% if current_user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="/dashboard">Dashboard</a>
+                        <a class="nav-link" href="/dashboard">{{ _('navigation.dashboard') }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/analyze">New Analysis</a>
+                        <a class="nav-link" href="/analyze">{{ _('navigation.analyze') }}</a>
                     </li>
                     {% endif %}
                     <li class="nav-item">
-                        <a class="nav-link" href="/pricing">Pricing</a>
+                        <a class="nav-link" href="/pricing">{{ _('navigation.pricing') }}</a>
                     </li>
                 </ul>
                 <ul class="navbar-nav">
+                    <!-- Language Selector -->
+                    <li class="nav-item dropdown me-2">
+                        <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-globe me-1"></i> {{ _('general.language') }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                            {% for lang in g.languages %}
+                            <li>
+                                <a class="dropdown-item {% if g.locale == lang.code %}active{% endif %}" href="/set-language/{{ lang.code }}">
+                                    {{ lang.name }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    
                     {% if current_user.is_authenticated %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-user-circle me-1"></i> {{ current_user.username }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                            <li><a class="dropdown-item" href="/profile">{{ _('navigation.profile') }}</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/logout">Logout</a></li>
+                            <li><a class="dropdown-item" href="/logout">{{ _('navigation.logout') }}</a></li>
                         </ul>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="/login">Login</a>
+                        <a class="nav-link" href="/login">{{ _('navigation.login') }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/register">Register</a>
+                        <a class="nav-link" href="/register">{{ _('navigation.register') }}</a>
                     </li>
                     {% endif %}
                 </ul>
@@ -97,18 +115,18 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-4">
-                    <h5>Opt-AI</h5>
-                    <p class="text-muted">Advanced SEO analysis powered by artificial intelligence.</p>
+                    <h5>{{ _('general.app_name') }}</h5>
+                    <p class="text-muted">{{ _('general.slogan') }}</p>
                 </div>
                 <div class="col-md-4">
-                    <h5>Quick Links</h5>
+                    <h5>{{ _('navigation.home') }}</h5>
                     <ul class="list-unstyled">
-                        <li><a href="/" class="text-decoration-none text-muted">Home</a></li>
-                        <li><a href="/pricing" class="text-decoration-none text-muted">Pricing</a></li>
+                        <li><a href="/" class="text-decoration-none text-muted">{{ _('navigation.home') }}</a></li>
+                        <li><a href="/pricing" class="text-decoration-none text-muted">{{ _('navigation.pricing') }}</a></li>
                         {% if current_user.is_authenticated %}
-                        <li><a href="/dashboard" class="text-decoration-none text-muted">Dashboard</a></li>
+                        <li><a href="/dashboard" class="text-decoration-none text-muted">{{ _('navigation.dashboard') }}</a></li>
                         {% else %}
-                        <li><a href="/register" class="text-decoration-none text-muted">Register</a></li>
+                        <li><a href="/register" class="text-decoration-none text-muted">{{ _('navigation.register') }}</a></li>
                         {% endif %}
                     </ul>
                 </div>
@@ -139,11 +157,11 @@
     <div class="chat-widget">
         <div id="chat-container" class="chat-container chat-hidden">
             <div class="chat-header">
-                <i class="fas fa-robot me-2"></i> Opty-bot Assistant
+                <i class="fas fa-robot me-2"></i> {{ _('chatbot.title') }}
             </div>
             <div id="chat-messages" class="chat-messages"></div>
             <form id="chat-form" class="chat-form">
-                <input type="text" id="chat-input" class="form-control" placeholder="Ask about SEO...">
+                <input type="text" id="chat-input" class="form-control" placeholder="{{ _('chatbot.placeholder') }}">
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-paper-plane"></i>
                 </button>
