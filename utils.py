@@ -16,6 +16,10 @@ def requires_subscription(plans):
                 flash('Please log in to access this feature', 'warning')
                 return redirect(url_for('auth.login'))
                 
+            # Administrateurs ont accès à toutes les fonctionnalités
+            if hasattr(current_user, 'is_admin') and current_user.is_admin:
+                return f(*args, **kwargs)
+                
             if current_user.subscription_status not in plans:
                 flash(f'This feature requires a {" or ".join(plans)} subscription', 'warning')
                 return redirect(url_for('main.pricing'))
