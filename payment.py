@@ -137,6 +137,9 @@ def create_checkout_session():
             flash('Unable to determine domain for checkout', 'danger')
             return redirect(url_for('main.pricing'))
         
+        # Ensure we have Stripe products and prices
+        create_stripe_products()
+        
         # Create or retrieve Stripe customer
         if not current_user.stripe_customer_id:
             customer = stripe.Customer.create(
@@ -151,6 +154,26 @@ def create_checkout_session():
             db.session.commit()
         else:
             customer = stripe.Customer.retrieve(current_user.stripe_customer_id)
+        
+        # Check if we have a price_id for this plan
+        if not STRIPE_PRODUCTS[plan]['price_id']:
+            # Create price for this plan
+            product = stripe.Product.create(
+                name=STRIPE_PRODUCTS[plan]['name'],
+                description=STRIPE_PRODUCTS[plan]['description'],
+                metadata={'plan': plan}
+            )
+            
+            price = stripe.Price.create(
+                product=product.id,
+                unit_amount=STRIPE_PRODUCTS[plan]['amount'],
+                currency='usd',
+                recurring={'interval': 'month'},
+                metadata={'plan': plan}
+            )
+            
+            STRIPE_PRODUCTS[plan]['price_id'] = price.id
+            logger.info(f"Created new Stripe price for {plan}: {price.id}")
         
         # Create checkout session
         checkout_session = stripe.checkout.Session.create(
