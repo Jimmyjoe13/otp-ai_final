@@ -11,6 +11,7 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     subscription_status = db.Column(db.String(20), default='free')
     subscription_ends_at = db.Column(db.DateTime, nullable=True)
+    stripe_customer_id = db.Column(db.String(100), nullable=True)
     
     # Relationships
     analyses = db.relationship('Analysis', backref='user', lazy='dynamic')
