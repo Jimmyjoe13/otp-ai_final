@@ -47,8 +47,8 @@
 <section class="py-5">
     <div class="container">
         <div class="text-center mb-5 reveal-on-scroll">
-            <h2 class="fw-bold">Powerful SEO Analysis Features</h2>
-            <p class="lead text-muted">Discover what makes Opt-AI the premium choice for SEO optimization</p>
+            <h2 class="fw-bold">{{ 'homepage.features_title' | translate }}</h2>
+            <p class="lead text-muted">{{ 'homepage.features_subtitle' | translate }}</p>
         </div>
         
         <div class="row g-4">
@@ -59,8 +59,8 @@
                         <div class="feature-icon">
                             <i class="fas fa-tags"></i>
                         </div>
-                        <h5 class="card-title">Meta Tag Analysis</h5>
-                        <p class="card-text">Comprehensive review of your page titles, descriptions, and meta tags.</p>
+                        <h5 class="card-title">{{ 'homepage.meta_analysis_title' | translate }}</h5>
+                        <p class="card-text">{{ 'homepage.meta_analysis_desc' | translate }}</p>
                     </div>
                 </div>
             </div>
@@ -72,8 +72,8 @@
                         <div class="feature-icon">
                             <i class="fas fa-file-alt"></i>
                         </div>
-                        <h5 class="card-title">Content Analysis</h5>
-                        <p class="card-text">Evaluate your content structure, readability, and keyword optimization.</p>
+                        <h5 class="card-title">{{ 'homepage.content_analysis_title' | translate }}</h5>
+                        <p class="card-text">{{ 'homepage.content_analysis_desc' | translate }}</p>
                     </div>
                 </div>
             </div>
@@ -85,8 +85,8 @@
                         <div class="feature-icon">
                             <i class="fas fa-cogs"></i>
                         </div>
-                        <h5 class="card-title">Technical SEO</h5>
-                        <p class="card-text">Identify technical issues affecting your site's search performance.</p>
+                        <h5 class="card-title">{{ 'homepage.technical_seo_title' | translate }}</h5>
+                        <p class="card-text">{{ 'homepage.technical_seo_desc' | translate }}</p>
                     </div>
                 </div>
             </div>
@@ -98,8 +98,8 @@
                         <div class="feature-icon">
                             <i class="fas fa-robot"></i>
                         </div>
-                        <h5 class="card-title">AI Insights</h5>
-                        <p class="card-text">Get intelligent recommendations powered by advanced AI analysis.</p>
+                        <h5 class="card-title">{{ 'homepage.ai_insights_title' | translate }}</h5>
+                        <p class="card-text">{{ 'homepage.ai_insights_desc' | translate }}</p>
                     </div>
                 </div>
             </div>
@@ -111,8 +111,8 @@
 <section class="py-5 bg-light">
     <div class="container">
         <div class="text-center mb-5 reveal-on-scroll">
-            <h2 class="fw-bold">How Opt-AI Works</h2>
-            <p class="lead text-muted">Simple process, powerful results</p>
+            <h2 class="fw-bold">{{ 'homepage.how_it_works_title' | translate }}</h2>
+            <p class="lead text-muted">{{ 'homepage.how_it_works_subtitle' | translate }}</p>
         </div>
         
         <div class="row g-4">
@@ -125,8 +125,8 @@
                                 <h3 class="mb-0">1</h3>
                             </span>
                         </div>
-                        <h4>Enter Your URL</h4>
-                        <p class="text-muted">Simply enter any website URL you want to analyze for SEO performance.</p>
+                        <h4>{{ 'homepage.step1_title' | translate }}</h4>
+                        <p class="text-muted">{{ 'homepage.step1_desc' | translate }}</p>
                     </div>
                 </div>
             </div>
@@ -140,8 +140,8 @@
                                 <h3 class="mb-0">2</h3>
                             </span>
                         </div>
-                        <h4>AI Analysis</h4>
-                        <p class="text-muted">Our AI engine performs a comprehensive analysis of your site's SEO factors.</p>
+                        <h4>{{ 'homepage.step2_title' | translate }}</h4>
+                        <p class="text-muted">{{ 'homepage.step2_desc' | translate }}</p>
                     </div>
                 </div>
             </div>
@@ -155,8 +155,8 @@
                                 <h3 class="mb-0">3</h3>
                             </span>
                         </div>
-                        <h4>Get Actionable Insights</h4>
-                        <p class="text-muted">Receive detailed reports with prioritized recommendations to improve your rankings.</p>
+                        <h4>{{ 'homepage.step3_title' | translate }}</h4>
+                        <p class="text-muted">{{ 'homepage.step3_desc' | translate }}</p>
                     </div>
                 </div>
             </div>
@@ -164,9 +164,9 @@
         
         <div class="text-center mt-5 reveal-on-scroll">
             {% if current_user.is_authenticated %}
-            <a href="/analyze" class="btn btn-primary btn-lg">Analyze Your Website Now</a>
+            <a href="/analyze" class="btn btn-primary btn-lg">{{ 'homepage.analyze_now' | translate }}</a>
             {% else %}
-            <a href="/register" class="btn btn-primary btn-lg">Get Started For Free</a>
+            <a href="/register" class="btn btn-primary btn-lg">{{ 'homepage.get_started_free' | translate }}</a>
             {% endif %}
         </div>
     </div>
@@ -176,8 +176,8 @@
 <section class="py-5">
     <div class="container">
         <div class="text-center mb-5 reveal-on-scroll">
-            <h2 class="fw-bold">What Our Users Say</h2>
-            <p class="lead text-muted">Join thousands of satisfied customers</p>
+            <h2 class="fw-bold">{{ 'homepage.testimonials_title' | translate }}</h2>
+            <p class="lead text-muted">{{ 'homepage.testimonials_subtitle' | translate }}</p>
         </div>
         
         <div class="row g-4">
@@ -269,14 +269,14 @@
 <section class="py-5 bg-primary text-white">
     <div class="container">
         <div class="text-center py-4 reveal-on-scroll">
-            <h2 class="fw-bold mb-3">Ready to optimize your website?</h2>
-            <p class="lead mb-4">Start improving your search rankings with AI-powered insights today.</p>
+            <h2 class="fw-bold mb-3">{{ 'homepage.ready_to_optimize' | translate }}</h2>
+            <p class="lead mb-4">{{ 'homepage.start_improving' | translate }}</p>
             <div class="d-grid gap-2 d-md-flex justify-content-md-center">
                 {% if current_user.is_authenticated %}
-                <a href="/analyze" class="btn btn-light btn-lg px-5">Start Analysis</a>
+                <a href="/analyze" class="btn btn-light btn-lg px-5">{{ 'homepage.analyze_now' | translate }}</a>
                 {% else %}
-                <a href="/register" class="btn btn-light btn-lg px-5">Sign Up Free</a>
-                <a href="/pricing" class="btn btn-outline-light btn-lg px-5">See Pricing</a>
+                <a href="/register" class="btn btn-light btn-lg px-5">{{ 'homepage.sign_up_free' | translate }}</a>
+                <a href="/pricing" class="btn btn-outline-light btn-lg px-5">{{ 'homepage.see_pricing' | translate }}</a>
                 {% endif %}
             </div>
         </div>
