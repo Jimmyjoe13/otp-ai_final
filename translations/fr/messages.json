@@ -3,7 +3,9 @@
     "app_name": "Opt-AI",
     "welcome": "Bienvenue sur Opt-AI - Votre assistant SEO alimenté par l'IA",
     "slogan": "Optimisez votre site web avec l'intelligence artificielle",
-    "language": "Langue"
+    "language": "Langue",
+    "copyright": "© {year} Opt-AI. Tous droits réservés.",
+    "contact": "Contact"
   },
   "homepage": {
     "features_title": "Fonctionnalités d'analyse SEO puissantes",
@@ -28,10 +30,20 @@
     "get_started_free": "Commencez gratuitement",
     "testimonials_title": "Ce que disent nos utilisateurs",
     "testimonials_subtitle": "Rejoignez des milliers de clients satisfaits",
+    "testimonial1": "\"Opt-AI nous a aidé à améliorer considérablement le classement de notre site e-commerce. Les recommandations de l'IA étaient pertinentes et faciles à mettre en œuvre.\"",
+    "testimonial2": "\"En tant que créateur de contenu, Opt-AI a été inestimable pour optimiser mes articles de blog. La fonctionnalité d'analyse sémantique est révolutionnaire !\"",
+    "testimonial3": "\"Nous avons essayé de nombreux outils SEO, mais les recommandations d'Opt-AI sont vraiment exploitables. Notre trafic a augmenté de 43% en seulement 3 mois.\"",
+    "testimonial1_name": "John Davies",
+    "testimonial1_title": "Responsable E-commerce",
+    "testimonial2_name": "Sarah Miller",
+    "testimonial2_title": "Créatrice de contenu",
+    "testimonial3_name": "Robert Johnson",
+    "testimonial3_title": "Directeur Marketing Digital",
     "ready_to_optimize": "Prêt à optimiser votre site web ?",
     "start_improving": "Commencez à améliorer votre classement dans les moteurs de recherche avec des insights alimentés par l'IA dès aujourd'hui.",
     "sign_up_free": "Inscrivez-vous gratuitement",
-    "see_pricing": "Voir les tarifs"
+    "see_pricing": "Voir les tarifs",
+    "start_analysis": "Commencer l'analyse"
   },
   "navigation": {
     "home": "Accueil",

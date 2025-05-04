@@ -3,7 +3,9 @@
     "app_name": "Opt-AI",
     "welcome": "Welcome to Opt-AI - Your AI-powered SEO assistant",
     "slogan": "Optimize your website with artificial intelligence",
-    "language": "Language"
+    "language": "Language",
+    "copyright": "© {year} Opt-AI. All rights reserved.",
+    "contact": "Contact"
   },
   "homepage": {
     "features_title": "Powerful SEO Analysis Features",
@@ -28,10 +30,20 @@
     "get_started_free": "Get Started For Free",
     "testimonials_title": "What Our Users Say",
     "testimonials_subtitle": "Join thousands of satisfied customers",
+    "testimonial1": "\"Opt-AI helped us improve our e-commerce site's rankings dramatically. The AI recommendations were spot-on and easy to implement.\"",
+    "testimonial2": "\"As a content creator, Opt-AI has been invaluable for optimizing my blog posts. The semantic analysis feature is a game-changer!\"",
+    "testimonial3": "\"We've tried many SEO tools, but Opt-AI's recommendations are actually actionable. Our traffic increased by 43% in just 3 months.\"",
+    "testimonial1_name": "John Davies",
+    "testimonial1_title": "E-commerce Manager",
+    "testimonial2_name": "Sarah Miller",
+    "testimonial2_title": "Content Creator",
+    "testimonial3_name": "Robert Johnson",
+    "testimonial3_title": "Digital Marketing Director",
     "ready_to_optimize": "Ready to optimize your website?",
     "start_improving": "Start improving your search engine rankings with AI-powered insights today.",
     "sign_up_free": "Sign Up Free",
-    "see_pricing": "See Pricing"
+    "see_pricing": "See Pricing",
+    "start_analysis": "Start Analysis"
   },
   "navigation": {
     "home": "Home",

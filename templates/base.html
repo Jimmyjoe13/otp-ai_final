@@ -131,7 +131,7 @@
                     </ul>
                 </div>
                 <div class="col-md-4">
-                    <h5>Contact</h5>
+                    <h5>{{ _('general.contact') }}</h5>
                     <p class="text-muted">
                         <i class="fas fa-envelope me-2"></i> support@opt-ai.com<br>
                         <i class="fas fa-phone me-2"></i> (123) 456-7890
@@ -141,7 +141,7 @@
             <hr class="my-3">
             <div class="row">
                 <div class="col-md-6">
-                    <p class="text-muted mb-0">&copy; {{ now.year }} Opt-AI. All rights reserved.</p>
+                    <p class="text-muted mb-0">{{ _('general.copyright').replace('{year}', now.year|string) }}</p>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <a href="#" class="text-muted me-3"><i class="fab fa-twitter"></i></a>
