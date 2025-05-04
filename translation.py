@@ -1,6 +1,6 @@
 import json
 import os
-from flask import request, session, g
+from flask import request, session, g, redirect
 
 def load_translations(lang_code):
     """
@@ -81,7 +81,8 @@ def init_app(app):
         # Store the language preference in session
         session['lang'] = lang_code
         # Redirect back to the previous page or home
-        return request.referrer or '/'
+        referrer = request.referrer or '/'
+        return redirect(referrer)
     
     # Add a translation function to Jinja templates
     @app.template_filter('translate')
