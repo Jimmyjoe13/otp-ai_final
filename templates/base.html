@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="{{ g.locale }}" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Opt-AI - Premium SEO Analysis{% endblock %}</title>
-    <meta name="description" content="Advanced SEO analysis powered by AI. Optimize your website's search engine performance with Opt-AI.">
+    <title>{% block title %}{{ _('general.app_name') }} - Premium SEO Analysis{% endblock %}</title>
+    <meta name="description" content="{{ _('general.slogan') }}">
     
     <!-- Favicon -->
     <link rel="icon" href="/static/favicon.ico" type="image/x-icon">

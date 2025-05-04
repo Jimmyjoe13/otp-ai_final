@@ -53,6 +53,10 @@ with app.app_context():
     # Create database tables
     db.create_all()
     
+    # Initialize translations
+    import translation
+    translation.init_app(app)
+    
     # Import and register blueprints
     from routes import main_bp
     from auth import auth_bp
