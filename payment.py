@@ -1,4 +1,5 @@
 import os
+import json
 import logging
 from datetime import datetime, timedelta
 from flask import Blueprint, request, redirect, url_for, flash, render_template, jsonify
@@ -17,20 +18,81 @@ stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
 STRIPE_PRODUCTS = {
     'basic': {
         'name': 'Basic Plan',
-        'price_id': os.environ.get('STRIPE_BASIC_PRICE_ID', 'price_basic'),
+        'description': 'Great for bloggers and small websites',
+        'amount': 1900,  # $19.00
+        'price_id': os.environ.get('STRIPE_BASIC_PRICE_ID', None),
         'features': ['Meta Tag Analysis', 'Partial Analysis', 'Dashboard Access']
     },
     'premium': {
         'name': 'Premium Plan',
-        'price_id': os.environ.get('STRIPE_PREMIUM_PRICE_ID', 'price_premium'),
+        'description': 'Perfect for businesses and marketing teams',
+        'amount': 4900,  # $49.00
+        'price_id': os.environ.get('STRIPE_PREMIUM_PRICE_ID', None),
         'features': ['Meta Tag Analysis', 'Partial Analysis', 'Complete Analysis', 'AI Recommendations', 'Priority Support']
     },
     'enterprise': {
         'name': 'Enterprise Plan',
-        'price_id': os.environ.get('STRIPE_ENTERPRISE_PRICE_ID', 'price_enterprise'),
+        'description': 'For agencies and large enterprise websites',
+        'amount': 14900,  # $149.00
+        'price_id': os.environ.get('STRIPE_ENTERPRISE_PRICE_ID', None),
         'features': ['All Premium Features', 'Deep Analysis with AI', 'Custom Reports', 'API Access', 'Dedicated Support']
     }
 }
+
+def create_stripe_products():
+    """Create Stripe products if they don't exist"""
+    logger.info("Creating Stripe products if needed...")
+    
+    for plan, details in STRIPE_PRODUCTS.items():
+        # Skip if price_id is already set
+        if details['price_id']:
+            continue
+            
+        try:
+            # Check if product exists
+            products = stripe.Product.list(active=True)
+            product_id = None
+            
+            # Look for existing product with this name
+            for product in products:
+                if product.name == details['name']:
+                    product_id = product.id
+                    break
+                    
+            # Create product if it doesn't exist
+            if not product_id:
+                product = stripe.Product.create(
+                    name=details['name'],
+                    description=details['description'],
+                    metadata={'plan': plan}
+                )
+                product_id = product.id
+                logger.info(f"Created Stripe product: {details['name']}")
+                
+            # Check if price exists for this product
+            prices = stripe.Price.list(product=product_id, active=True)
+            if not prices.data:
+                # Create price
+                price = stripe.Price.create(
+                    product=product_id,
+                    unit_amount=details['amount'],
+                    currency='usd',
+                    recurring={'interval': 'month'},
+                    metadata={'plan': plan}
+                )
+                
+                # Update price_id in our configuration
+                STRIPE_PRODUCTS[plan]['price_id'] = price.id
+                logger.info(f"Created Stripe price for {details['name']}: {price.id}")
+            else:
+                # Use existing price
+                STRIPE_PRODUCTS[plan]['price_id'] = prices.data[0].id
+                logger.info(f"Using existing Stripe price for {details['name']}: {prices.data[0].id}")
+                
+        except Exception as e:
+            logger.error(f"Error creating Stripe product/price for {plan}: {str(e)}")
+            
+    logger.info("Stripe products setup complete.")
 
 # Get domain for redirects
 def get_domain():
@@ -43,6 +105,23 @@ def get_domain():
 
 # Create Blueprint
 payment_bp = Blueprint('payment', __name__)
+
+@payment_bp.route('/init-products', methods=['GET'])
+@login_required
+def init_products():
+    """Initialize Stripe products - admin only route"""
+    if not current_user.is_authenticated or current_user.id != 1:  # Assuming user ID 1 is admin
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('main.index'))
+        
+    try:
+        create_stripe_products()
+        flash('Stripe products initialized successfully', 'success')
+    except Exception as e:
+        logger.error(f"Error initializing Stripe products: {str(e)}")
+        flash(f'Error initializing products: {str(e)}', 'danger')
+        
+    return redirect(url_for('main.pricing'))
 
 @payment_bp.route('/create-checkout-session', methods=['POST'])
 @login_required
@@ -168,17 +247,28 @@ def payment_cancel():
 def webhook():
     payload = request.get_data(as_text=True)
     sig_header = request.headers.get('Stripe-Signature')
+    webhook_secret = os.environ.get('STRIPE_WEBHOOK_SECRET')
     
-    try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, os.environ.get('STRIPE_WEBHOOK_SECRET')
-        )
-    except ValueError as e:
-        logger.error(f"Invalid payload: {str(e)}")
-        return jsonify(success=False), 400
-    except stripe.error.SignatureVerificationError as e:
-        logger.error(f"Invalid signature: {str(e)}")
-        return jsonify(success=False), 400
+    # Handle the case where webhook secret is not set
+    if not webhook_secret:
+        # In development, we'll parse the payload directly
+        try:
+            event = json.loads(payload)
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON payload: {str(e)}")
+            return jsonify(success=False), 400
+    else:
+        # In production, validate the signature
+        try:
+            event = stripe.Webhook.construct_event(
+                payload, sig_header, webhook_secret
+            )
+        except ValueError as e:
+            logger.error(f"Invalid payload: {str(e)}")
+            return jsonify(success=False), 400
+        except Exception as e:
+            logger.error(f"Webhook error: {str(e)}")
+            return jsonify(success=False), 400
     
     # Handle specific events
     if event['type'] == 'customer.subscription.updated':
