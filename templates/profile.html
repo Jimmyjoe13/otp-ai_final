@@ -96,49 +96,57 @@
             <!-- Subscription Details -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Subscription Details</h5>
+                    <h5 class="mb-0">{{ _('profile.subscription') }}</h5>
                     <a href="/pricing" class="btn btn-sm btn-outline-primary">
-                        {{ 'Upgrade' if current_user.subscription_status == 'free' else 'Manage' }}
+                        {{ _('profile.upgrade') if current_user.subscription_status == 'free' else _('common.edit') }}
                     </a>
                 </div>
                 <div class="card-body">
                     {% if current_user.subscription_status == 'free' %}
                     <div class="alert alert-info">
-                        <h6><i class="fas fa-info-circle me-2"></i> Free Plan</h6>
-                        <p class="mb-0">You're currently on the free plan. Upgrade to unlock more powerful SEO analysis features.</p>
+                        <h6><i class="fas fa-info-circle me-2"></i> {{ _('profile.free_plan') }}</h6>
+                        <p class="mb-0">{{ _('pricing.free_description') }}</p>
                     </div>
                     <div class="text-center py-3">
-                        <a href="/pricing" class="btn btn-primary">View Pricing Plans</a>
+                        <a href="/pricing" class="btn btn-primary">{{ _('pricing.title') }}</a>
                     </div>
                     {% else %}
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label text-muted">Current Plan</label>
-                                <div class="h5 text-capitalize">{{ current_user.subscription_status }}</div>
+                                <label class="form-label text-muted">{{ _('profile.current_plan') }}</label>
+                                <div class="h5">
+                                    {% if current_user.subscription_status == 'basic' %}
+                                        {{ _('profile.basic_plan') }}
+                                    {% elif current_user.subscription_status == 'premium' %}
+                                        {{ _('profile.premium_plan') }}
+                                    {% elif current_user.subscription_status == 'enterprise' %}
+                                        {{ _('profile.enterprise_plan') }}
+                                    {% endif %}
+                                </div>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label text-muted">Billing Cycle</label>
-                                <div>Monthly</div>
+                                <label class="form-label text-muted">{{ _('pricing.monthly') }}</label>
+                                <div>{{ _('profile.monthly') }}</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label text-muted">Next Billing Date</label>
+                                <label class="form-label text-muted">{{ _('profile.next_billing') }}</label>
                                 <div>{% if formatted_dates.subscription_ends_at %}{{ formatted_dates.subscription_ends_at }}{% else %}{{ _('profile.no_billing_date') }}{% endif %}</div>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label text-muted">Payment Method</label>
+                                <label class="form-label text-muted">{{ _('profile.payment_method') }}</label>
                                 <div>•••• •••• •••• 4242</div>
                             </div>
                         </div>
                     </div>
                     <div class="d-flex justify-content-between">
                         <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#updatePaymentModal">
-                            <i class="fas fa-credit-card me-1"></i> Update Payment Method
+                            <i class="fas fa-credit-card me-1"></i> {{ _('profile.update_payment') }}
                         </button>
                         <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelSubscriptionModal">
-                            <i class="fas fa-times-circle me-1"></i> Cancel Subscription
+                            <i class="fas fa-times-circle me-1"></i> {{ _('profile.cancel') }}
                         </button>
                     </div>
                     {% endif %}
@@ -148,12 +156,12 @@
             <!-- Usage Statistics -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-transparent">
-                    <h5 class="mb-0">Usage Statistics</h5>
+                    <h5 class="mb-0">{{ _('profile.usage_stats') }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-4">
-                            <h6>Analyses This Month</h6>
+                            <h6>{{ _('profile.analyses_month') }}</h6>
                             <div class="progress" style="height: 20px;">
                                 <div class="progress-bar bg-primary" role="progressbar" style="width: 65%;" 
                                      aria-valuenow="65" aria-valuemin="0" aria-valuemax="100">
@@ -162,14 +170,14 @@
                             </div>
                             <div class="small text-muted mt-1">
                                 {% if current_user.subscription_status == 'free' %}
-                                7 analyses remaining this month
+                                7 {{ _('profile.remaining') }}
                                 {% else %}
-                                Unlimited analyses available
+                                {{ _('profile.unlimited') }}
                                 {% endif %}
                             </div>
                         </div>
                         <div class="col-md-6 mb-4">
-                            <h6>AI Recommendations</h6>
+                            <h6>{{ _('profile.ai_recommendations') }}</h6>
                             <div class="progress" style="height: 20px;">
                                 <div class="progress-bar bg-success" role="progressbar" style="width: 30%;" 
                                      aria-valuenow="30" aria-valuemin="0" aria-valuemax="100">
@@ -178,9 +186,9 @@
                             </div>
                             <div class="small text-muted mt-1">
                                 {% if current_user.subscription_status in ['premium', 'enterprise'] %}
-                                Unlimited AI recommendations available
+                                {{ _('profile.unlimited') }}
                                 {% else %}
-                                Upgrade to Premium for AI recommendations
+                                {{ _('profile.upgrade_for_ai') }}
                                 {% endif %}
                             </div>
                         </div>
@@ -195,18 +203,18 @@
             <!-- Payment History -->
             <div class="card shadow-sm">
                 <div class="card-header bg-transparent">
-                    <h5 class="mb-0">Payment History</h5>
+                    <h5 class="mb-0">{{ _('profile.payment_history') }}</h5>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Description</th>
-                                    <th>Amount</th>
-                                    <th>Status</th>
-                                    <th>Receipt</th>
+                                    <th>{{ _('profile.date') }}</th>
+                                    <th>{{ _('profile.description') }}</th>
+                                    <th>{{ _('profile.amount') }}</th>
+                                    <th>{{ _('profile.status') }}</th>
+                                    <th>{{ _('profile.receipt') }}</th>
                                 </tr>
                             </thead>
                             <tbody id="payment-history">
@@ -214,20 +222,28 @@
                                 {% if current_user.subscription_status != 'free' %}
                                 <tr>
                                     <td>{{ formatted_dates.last_payment_date }}</td>
-                                    <td>{{ current_user.subscription_status|capitalize }} Plan - Monthly</td>
+                                    <td>
+                                        {% if current_user.subscription_status == 'basic' %}
+                                            {{ _('profile.basic_plan') }}
+                                        {% elif current_user.subscription_status == 'premium' %}
+                                            {{ _('profile.premium_plan') }}
+                                        {% elif current_user.subscription_status == 'enterprise' %}
+                                            {{ _('profile.enterprise_plan') }}
+                                        {% endif %} - {{ _('profile.monthly') }}
+                                    </td>
                                     <td>
                                         {% if current_user.subscription_status == 'basic' %}$19.00
                                         {% elif current_user.subscription_status == 'premium' %}$49.00
                                         {% elif current_user.subscription_status == 'enterprise' %}$149.00
                                         {% endif %}
                                     </td>
-                                    <td><span class="badge bg-success">Paid</span></td>
-                                    <td><a href="#" class="btn btn-sm btn-outline-secondary">View</a></td>
+                                    <td><span class="badge bg-success">{{ _('profile.paid') }}</span></td>
+                                    <td><a href="#" class="btn btn-sm btn-outline-secondary">{{ _('profile.view') }}</a></td>
                                 </tr>
                                 {% else %}
                                 <tr>
                                     <td colspan="5" class="text-center py-4">
-                                        <p class="mb-0">No payment history available</p>
+                                        <p class="mb-0">{{ _('profile.no_payments') }}</p>
                                     </td>
                                 </tr>
                                 {% endif %}
@@ -245,24 +261,24 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Edit Profile</h5>
+                <h5 class="modal-title">{{ _('profile.edit_profile') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="edit-profile-form">
                     <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
+                        <label for="username" class="form-label">{{ _('profile.username') }}</label>
                         <input type="text" class="form-control" id="username" name="username" value="{{ current_user.username }}">
                     </div>
                     <div class="mb-3">
-                        <label for="email" class="form-label">Email Address</label>
+                        <label for="email" class="form-label">{{ _('profile.email') }}</label>
                         <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="save-profile">Save Changes</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('common.cancel') }}</button>
+                <button type="button" class="btn btn-primary" id="save-profile">{{ _('profile.save_changes') }}</button>
             </div>
         </div>
     </div>
@@ -273,28 +289,28 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Change Password</h5>
+                <h5 class="modal-title">{{ _('profile.change_password') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="change-password-form">
                     <div class="mb-3">
-                        <label for="current_password" class="form-label">Current Password</label>
+                        <label for="current_password" class="form-label">{{ _('profile.current_password') }}</label>
                         <input type="password" class="form-control" id="current_password" name="current_password">
                     </div>
                     <div class="mb-3">
-                        <label for="new_password" class="form-label">New Password</label>
+                        <label for="new_password" class="form-label">{{ _('profile.new_password') }}</label>
                         <input type="password" class="form-control" id="new_password" name="new_password">
                     </div>
                     <div class="mb-3">
-                        <label for="confirm_password" class="form-label">Confirm New Password</label>
+                        <label for="confirm_password" class="form-label">{{ _('profile.confirm_password') }}</label>
                         <input type="password" class="form-control" id="confirm_password" name="confirm_password">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="change-password">Update Password</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('common.cancel') }}</button>
+                <button type="button" class="btn btn-primary" id="change-password">{{ _('profile.change_password') }}</button>
             </div>
         </div>
     </div>
@@ -305,17 +321,17 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Update Payment Method</h5>
+                <h5 class="modal-title">{{ _('profile.update_payment') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i> You will be redirected to our secure payment provider to update your payment method.
+                    <i class="fas fa-info-circle me-2"></i> {{ _('profile.update_payment_notice') }}
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="update-payment">Continue</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('common.cancel') }}</button>
+                <button type="button" class="btn btn-primary" id="update-payment">{{ _('profile.continue') }}</button>
             </div>
         </div>
     </div>
