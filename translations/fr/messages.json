@@ -263,7 +263,9 @@
     "status": "Statut",
     "no_payments": "Aucun paiement",
     "delete_account": "Supprimer le compte",
-    "delete_warning": "Attention : cette action est irréversible"
+    "delete_warning": "Attention : cette action est irréversible",
+    "no_billing_date": "Non disponible",
+    "until_end_of_period": "jusqu'à la fin de la période en cours"
   },
   "chatbot": {
     "title": "Opty-bot - Votre assistant SEO",

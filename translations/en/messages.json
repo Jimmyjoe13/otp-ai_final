@@ -263,7 +263,9 @@
     "status": "Status",
     "no_payments": "No payments",
     "delete_account": "Delete account",
-    "delete_warning": "Warning: this action is irreversible"
+    "delete_warning": "Warning: this action is irreversible",
+    "no_billing_date": "Not available",
+    "until_end_of_period": "until the end of the current period"
   },
   "chatbot": {
     "title": "Opty-bot - Your SEO assistant",
