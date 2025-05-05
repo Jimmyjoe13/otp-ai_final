@@ -115,8 +115,12 @@ def ai_recommendations(analysis_id):
         "recommendation": d.recommendation
     } for d in details}
     
-    # Get AI recommendations
-    recommendations = get_seo_recommendations(analysis.url, analysis.analysis_type, details_dict)
+    # Get the current language from Flask g object
+    from flask import g
+    current_lang = getattr(g, 'locale', 'en')
+    
+    # Get AI recommendations with the current language
+    recommendations = get_seo_recommendations(analysis.url, analysis.analysis_type, details_dict, lang_code=current_lang)
     
     return jsonify(recommendations)
 

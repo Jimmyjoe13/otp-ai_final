@@ -19,7 +19,7 @@ try:
 except Exception as e:
     logger.error(f"Error initializing OpenAI client: {str(e)}")
 
-def get_seo_recommendations(url, analysis_type, analysis_details):
+def get_seo_recommendations(url, analysis_type, analysis_details, lang_code='en'):
     """
     Get AI-powered SEO recommendations based on analysis results
     
@@ -27,6 +27,7 @@ def get_seo_recommendations(url, analysis_type, analysis_details):
     - url: The URL that was analyzed
     - analysis_type: Type of analysis performed
     - analysis_details: Dictionary of analysis details
+    - lang_code: Language code (e.g., 'fr', 'en') for the response
     
     Returns:
     - Dictionary with AI recommendations
@@ -51,14 +52,16 @@ def get_seo_recommendations(url, analysis_type, analysis_details):
         # Convert analysis details to a formatted string for the AI
         analysis_text = format_analysis_for_ai(url, analysis_type, analysis_details)
         
-        # Prepare prompt
+        # Prepare prompt with language instruction
+        language_instruction = "in French" if lang_code == 'fr' else "in English"
+        
         prompt = f"""
         You are an expert SEO consultant analyzing the following website: {url}
         
         Here is the SEO analysis data:
         {analysis_text}
         
-        Based on this analysis, please provide:
+        Based on this analysis, please provide your response {language_instruction}:
         1. A summary of the main SEO issues identified
         2. The top 3-5 most important recommendations to improve the site's SEO
         3. Specific actionable steps for each recommendation
@@ -75,7 +78,7 @@ def get_seo_recommendations(url, analysis_type, analysis_details):
         response = openai.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "You are an expert SEO analyst providing clear, actionable advice."},
+                {"role": "system", "content": f"You are an expert SEO analyst providing clear, actionable advice {language_instruction}."},
                 {"role": "user", "content": prompt}
             ],
             response_format={"type": "json_object"},
