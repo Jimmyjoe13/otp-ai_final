@@ -98,3 +98,17 @@ def init_app(app):
     
     # Add a shorter alias for translate
     app.jinja_env.globals['_'] = translate_filter
+    
+    # Add a filter for translating SEO recommendations
+    @app.template_filter('translate_recommendation')
+    def translate_recommendation(recommendation):
+        if recommendation == "Your title is too long. Keep it under 60 characters for better visibility in search results.":
+            return translate_filter("report.your_title_is_too_long")
+        elif recommendation == "Add a meta description to improve CTR in search results.":
+            return translate_filter("report.add_meta_description")
+        elif recommendation == "Implement Open Graph tags":
+            return translate_filter("report.implement_open_graph")
+        elif recommendation == "While not critical for SEO, meta keywords can help with site organization.":
+            return translate_filter("report.while_not_critical")
+        else:
+            return recommendation
