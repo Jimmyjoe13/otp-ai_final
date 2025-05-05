@@ -138,7 +138,7 @@
                         <span class="price-value">$149</span>
                         <span class="price-period">/month</span>
                     </div>
-                    <p class="text-muted mb-4">For agencies and large enterprise websites</p>
+                    <p class="text-muted mb-4">{{ _('pricing.enterprise_description') }}</p>
                     
                     <ul class="feature-list text-start mb-4">
                         <li>Everything in Premium</li>
@@ -171,51 +171,51 @@
     <!-- Feature Comparison -->
     <div class="card shadow-sm mb-5">
         <div class="card-header bg-transparent">
-            <h3 class="mb-0">Feature Comparison</h3>
+            <h3 class="mb-0">{{ _('pricing.feature_comparison') }}</h3>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Feature</th>
-                            <th class="text-center">Free</th>
-                            <th class="text-center">Basic</th>
-                            <th class="text-center">Premium</th>
-                            <th class="text-center">Enterprise</th>
+                            <th>{{ _('pricing.feature') }}</th>
+                            <th class="text-center">{{ _('pricing.free_plan') }}</th>
+                            <th class="text-center">{{ _('pricing.basic_plan') }}</th>
+                            <th class="text-center">{{ _('pricing.premium_plan') }}</th>
+                            <th class="text-center">{{ _('pricing.enterprise_plan') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <th scope="row">Meta Tags Analysis</th>
+                            <th scope="row">{{ _('pricing.feature_meta_tags') }}</th>
                             <td class="text-center"><i class="fas fa-check text-success"></i></td>
                             <td class="text-center"><i class="fas fa-check text-success"></i></td>
                             <td class="text-center"><i class="fas fa-check text-success"></i></td>
                             <td class="text-center"><i class="fas fa-check text-success"></i></td>
                         </tr>
                         <tr>
-                            <th scope="row">Partial Analysis</th>
+                            <th scope="row">{{ _('pricing.feature_partial_analysis') }}</th>
                             <td class="text-center"><i class="fas fa-times text-muted"></i></td>
                             <td class="text-center"><i class="fas fa-check text-success"></i></td>
                             <td class="text-center"><i class="fas fa-check text-success"></i></td>
                             <td class="text-center"><i class="fas fa-check text-success"></i></td>
                         </tr>
                         <tr>
-                            <th scope="row">Complete Analysis</th>
+                            <th scope="row">{{ _('pricing.feature_complete_analysis') }}</th>
                             <td class="text-center"><i class="fas fa-times text-muted"></i></td>
                             <td class="text-center"><i class="fas fa-times text-muted"></i></td>
                             <td class="text-center"><i class="fas fa-check text-success"></i></td>
                             <td class="text-center"><i class="fas fa-check text-success"></i></td>
                         </tr>
                         <tr>
-                            <th scope="row">Deep AI Analysis</th>
+                            <th scope="row">{{ _('pricing.feature_deep_ai') }}</th>
                             <td class="text-center"><i class="fas fa-times text-muted"></i></td>
                             <td class="text-center"><i class="fas fa-times text-muted"></i></td>
                             <td class="text-center"><i class="fas fa-times text-muted"></i></td>
                             <td class="text-center"><i class="fas fa-check text-success"></i></td>
                         </tr>
                         <tr>
-                            <th scope="row">AI Recommendations</th>
+                            <th scope="row">{{ _('pricing.feature_ai_recommendations') }}</th>
                             <td class="text-center"><i class="fas fa-times text-muted"></i></td>
                             <td class="text-center"><i class="fas fa-times text-muted"></i></td>
                             <td class="text-center"><i class="fas fa-check text-success"></i></td>
@@ -265,18 +265,18 @@
     <!-- FAQ Section -->
     <div class="row mb-5">
         <div class="col-lg-12">
-            <h3 class="fw-bold mb-4">Frequently Asked Questions</h3>
+            <h3 class="fw-bold mb-4">{{ _('pricing.faq_title') }}</h3>
             
             <div class="accordion" id="pricingFaq">
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="headingOne">
                         <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                            Can I switch plans at any time?
+                            {{ _('pricing.faq_switch_plans') }}
                         </button>
                     </h2>
                     <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#pricingFaq">
                         <div class="accordion-body">
-                            Yes, you can upgrade or downgrade your plan at any time. When upgrading, you'll have immediate access to the new features. When downgrading, the change will take effect at the end of your current billing cycle.
+                            {{ _('pricing.faq_switch_plans_answer') }}
                         </div>
                     </div>
                 </div>
@@ -284,12 +284,12 @@
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="headingTwo">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                            What payment methods do you accept?
+                            {{ _('pricing.faq_payment_methods') }}
                         </button>
                     </h2>
                     <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#pricingFaq">
                         <div class="accordion-body">
-                            We accept all major credit cards (Visa, Mastercard, American Express, Discover) through our secure payment processor, Stripe. We do not store your payment information on our servers.
+                            {{ _('pricing.faq_payment_methods_answer') }}
                         </div>
                     </div>
                 </div>
@@ -297,12 +297,12 @@
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="headingThree">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                            Is there a contract or commitment?
+                            {{ _('pricing.faq_contract') }}
                         </button>
                     </h2>
                     <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#pricingFaq">
                         <div class="accordion-body">
-                            No, all of our plans are billed monthly with no long-term contract. You can cancel at any time and your subscription will end at the conclusion of your current billing cycle.
+                            {{ _('pricing.faq_contract_answer') }}
                         </div>
                     </div>
                 </div>
@@ -310,12 +310,12 @@
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="headingFour">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
-                            Do you offer refunds?
+                            {{ _('pricing.faq_refunds') }}
                         </button>
                     </h2>
                     <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#pricingFaq">
                         <div class="accordion-body">
-                            We offer a 14-day money-back guarantee on all paid plans. If you're not satisfied with our service within the first 14 days, contact our support team for a full refund.
+                            {{ _('pricing.faq_refunds_answer') }}
                         </div>
                     </div>
                 </div>
@@ -323,7 +323,7 @@
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="headingFive">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
-                            Do you offer custom enterprise solutions?
+                            {{ _('pricing.faq_custom_solutions') }}
                         </button>
                     </h2>
                     <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#pricingFaq">
