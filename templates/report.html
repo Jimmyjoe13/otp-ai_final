@@ -38,18 +38,18 @@
                     <div class="row align-items-center">
                         <div class="col-md-4 text-center">
                             {% set score_status = 'danger' if analysis.overall_score < 60 else ('warning' if analysis.overall_score < 80 else 'success') %}
-                            {% set score_label = 'Poor' if analysis.overall_score < 60 else ('Fair' if analysis.overall_score < 80 else 'Good') %}
+                            {% set score_label = _('report.poor') if analysis.overall_score < 60 else (_('report.fair') if analysis.overall_score < 80 else _('report.good_score')) %}
                             
                             <div class="circular-score {{ score_status }}">
                                 <h1 class="display-1 fw-bold mb-0">{{ analysis.overall_score }}</h1>
-                                <div class="fs-5">out of 100</div>
+                                <div class="fs-5">{{ _('report.out_of_100') }}</div>
                             </div>
                             <h4 class="mt-2 text-{{ score_status }}">{{ score_label }}</h4>
                         </div>
                         <div class="col-md-8">
-                            <h2 class="fw-bold mb-3">Overall SEO Health</h2>
+                            <h2 class="fw-bold mb-3">{{ _('report.seo_health') }}</h2>
                             <div class="mb-3">
-                                <span class="fw-bold">Meta Score:</span>
+                                <span class="fw-bold">{{ _("report.meta_score") }}</span>
                                 <div class="progress mt-1" style="height: 20px;">
                                     {% set meta_class = 'bg-danger' if analysis.meta_score < 60 else ('bg-warning' if analysis.meta_score < 80 else 'bg-success') %}
                                     <div class="progress-bar {{ meta_class }}" role="progressbar" style="width: {{ analysis.meta_score }}%;" 
@@ -61,7 +61,7 @@
                             
                             {% if analysis.content_score is not none %}
                             <div class="mb-3">
-                                <span class="fw-bold">Content Score:</span>
+                                <span class="fw-bold">{{ _("report.content_score") }}</span>
                                 <div class="progress mt-1" style="height: 20px;">
                                     {% set content_class = 'bg-danger' if analysis.content_score < 60 else ('bg-warning' if analysis.content_score < 80 else 'bg-success') %}
                                     <div class="progress-bar {{ content_class }}" role="progressbar" style="width: {{ analysis.content_score }}%;" 
@@ -74,7 +74,7 @@
                             
                             {% if analysis.technical_score is not none %}
                             <div class="mb-3">
-                                <span class="fw-bold">Technical Score:</span>
+                                <span class="fw-bold">{{ _("report.technical_score") }}</span>
                                 <div class="progress mt-1" style="height: 20px;">
                                     {% set tech_class = 'bg-danger' if analysis.technical_score < 60 else ('bg-warning' if analysis.technical_score < 80 else 'bg-success') %}
                                     <div class="progress-bar {{ tech_class }}" role="progressbar" style="width: {{ analysis.technical_score }}%;" 
@@ -127,7 +127,7 @@
                                         <div class="d-flex justify-content-between mb-2">
                                             <h5 class="mb-0">{{ detail.component|capitalize }}</h5>
                                             <span class="badge rounded-pill bg-{{ 'success' if detail.status == 'good' else ('warning' if detail.status == 'warning' else 'danger') }}">
-                                                {{ detail.status|upper }}
+                                                {{ _("report." + detail.status) }}
                                             </span>
                                         </div>
                                         <p>{{ detail.description }}</p>
@@ -166,7 +166,7 @@
                                         <div class="d-flex justify-content-between mb-2">
                                             <h5 class="mb-0">{{ detail.component|capitalize|replace('_', ' ') }}</h5>
                                             <span class="badge rounded-pill bg-{{ 'success' if detail.status == 'good' else ('warning' if detail.status == 'warning' else 'danger') }}">
-                                                {{ detail.status|upper }}
+                                                {{ _("report." + detail.status) }}
                                             </span>
                                         </div>
                                         <p>{{ detail.description }}</p>
@@ -206,7 +206,7 @@
                                         <div class="d-flex justify-content-between mb-2">
                                             <h5 class="mb-0">{{ detail.component|capitalize|replace('_', ' ') }}</h5>
                                             <span class="badge rounded-pill bg-{{ 'success' if detail.status == 'good' else ('warning' if detail.status == 'warning' else 'danger') }}">
-                                                {{ detail.status|upper }}
+                                                {{ _("report." + detail.status) }}
                                             </span>
                                         </div>
                                         <p>{{ detail.description }}</p>
@@ -267,9 +267,9 @@
                             <i class="fas fa-comments fa-2x"></i>
                         </div>
                         <div>
-                            <h5>Get AI Help</h5>
-                            <p class="mb-0">Use our AI assistant to get personalized advice.</p>
-                            <button class="btn btn-sm btn-outline-info mt-2" id="open-chat-bot">Ask Opty-bot</button>
+                            <h5>{{ _("report.get_ai_help") }}</h5>
+                            <p class="mb-0">{{ _("report.ai_help_description") }}</p>
+                            <button class="btn btn-sm btn-outline-info mt-2" id="open-chat-bot">{{ _("report.ask_optybot") }}</button>
                         </div>
                     </div>
                 </div>
