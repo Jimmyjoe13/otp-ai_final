@@ -70,7 +70,11 @@
     "logout": "Déconnexion"
   },
   "dashboard": {
+    "title": "Tableau de bord",
+    "meta_description": "Gérez vos analyses SEO et suivez vos performances de référencement",
     "welcome": "Bienvenue sur votre tableau de bord",
+    "dashboard": "Tableau de bord",
+    "welcome_back": "Bon retour",
     "recent_analyses": "Analyses récentes",
     "seo_performance": "Performance SEO",
     "no_analysis": "Vous n'avez pas encore effectué d'analyse",
@@ -81,7 +85,23 @@
     "content_score": "Score Contenu",
     "technical_score": "Score Technique",
     "analysis_date": "Date d'analyse",
-    "analysis_type": "Type d'analyse"
+    "analysis_type": "Type d'analyse",
+    "new_analysis": "Nouvelle analyse",
+    "refresh": "Actualiser",
+    "free_plan_message": "Vous utilisez actuellement le plan",
+    "upgrade_message": "Mettez à niveau pour débloquer des analyses avancées et des fonctionnalités supplémentaires.",
+    "upgrade_now": "Mettre à niveau maintenant",
+    "total_analyses": "Analyses totales",
+    "average_score": "Score moyen",
+    "current_plan": "Plan actuel",
+    "score_history": "Historique des scores",
+    "url": "URL",
+    "type": "Type",
+    "date": "Date",
+    "score": "Score",
+    "actions": "Actions",
+    "loading_history": "Chargement de l'historique...",
+    "analyze_new_url": "Analyser une nouvelle URL"
   },
   "analyze": {
     "title": "Analyser votre site web",
