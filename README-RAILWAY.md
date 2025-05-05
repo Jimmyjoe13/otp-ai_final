@@ -22,9 +22,16 @@ L'application est configurée pour être déployée sur Railway via Docker. Les 
 
 Configurez les variables d'environnement suivantes dans votre projet Railway :
 
+### Variables obligatoires :
 - `DATABASE_URL` : URL de connexion à la base de données PostgreSQL
 - `SESSION_SECRET` : Clé secrète pour les sessions et JWT
-- Toute autre variable d'environnement nécessaire à votre application (clés API, etc.)
+- `OPENAI_API_KEY` : Clé API OpenAI pour les fonctionnalités d'IA
+
+### Variables optionnelles (pour les paiements Stripe) :
+- `STRIPE_SECRET_KEY` : Clé secrète Stripe pour le traitement des paiements
+- `STRIPE_BASIC_PRICE_ID` : ID de prix Stripe pour le plan Basic
+- `STRIPE_PREMIUM_PRICE_ID` : ID de prix Stripe pour le plan Premium
+- `STRIPE_ENTERPRISE_PRICE_ID` : ID de prix Stripe pour le plan Enterprise
 
 ## Déploiement
 
