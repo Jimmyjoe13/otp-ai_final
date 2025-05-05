@@ -116,7 +116,20 @@
     "good": "Bon",
     "warning": "Attention",
     "error": "Erreur",
-    "info": "Info"
+    "info": "Info",
+    "top_priorities": "Priorités principales",
+    "detailed_recommendations": "Recommandations détaillées",
+    "action_steps": "Étapes d'action",
+    "insights": "Perspectives complémentaires",
+    "recommendation": "Recommandation",
+    "generating_ai_recommendations": "Génération des recommandations IA en cours...",
+    "loading_recommendations": "Chargement des recommandations...",
+    "try_again": "Réessayer",
+    "error_loading_recommendations": "Erreur lors du chargement des recommandations",
+    "your_title_is_too_long": "Votre titre est trop long. Gardez-le en dessous de 60 caractères pour une meilleure visibilité dans les résultats de recherche.",
+    "add_meta_description": "Ajoutez une balise meta description pour améliorer le CTR des résultats de recherche.",
+    "implement_open_graph": "Implémentez les balises Open Graph",
+    "while_not_critical": "Bien que non critique pour le référencement, les balises meta keywords peuvent aider à l'organisation du site."
   },
   "pricing": {
     "title": "Plans et tarifs",

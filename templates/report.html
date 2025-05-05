@@ -95,7 +95,7 @@
     {% if current_user.subscription_status in ['premium', 'enterprise'] and analysis.analysis_type in ['complete', 'deep'] %}
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-primary text-white">
-            <h4 class="mb-0"><i class="fas fa-robot me-2"></i> AI Recommendations</h4>
+            <h4 class="mb-0"><i class="fas fa-robot me-2"></i> {{ _('report.ai_insights') }}</h4>
         </div>
         <div class="card-body p-4" id="ai-recommendations">
             <div class="text-center py-4">
