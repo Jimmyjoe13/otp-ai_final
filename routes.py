@@ -132,8 +132,16 @@ def pricing():
 @main_bp.route('/profile')
 @login_required
 def profile():
-    from datetime import datetime
-    return render_template('profile.html', now=datetime.now())
+    from datetime import datetime, timedelta
+    
+    # Format the dates for profile page to avoid template date formatting errors
+    now = datetime.now()
+    formatted_dates = {
+        'subscription_ends_at': current_user.subscription_ends_at.strftime('%B %d, %Y') if current_user.subscription_ends_at else None,
+        'last_payment_date': (current_user.subscription_ends_at - timedelta(days=30)).strftime('%b %d, %Y') if current_user.subscription_ends_at else now.strftime('%b %d, %Y')
+    }
+    
+    return render_template('profile.html', now=now, formatted_dates=formatted_dates)
 
 @main_bp.route('/api/analyses')
 @login_required
