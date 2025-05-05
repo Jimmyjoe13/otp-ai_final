@@ -102,13 +102,52 @@ def init_app(app):
     # Add a filter for translating SEO recommendations
     @app.template_filter('translate_recommendation')
     def translate_recommendation(recommendation):
+        # Title recommendations
         if recommendation == "Your title is too long. Keep it under 60 characters for better visibility in search results.":
             return translate_filter("report.your_title_is_too_long")
-        elif recommendation == "Add a meta description to improve CTR in search results.":
+        elif recommendation == "Your title is too short. Make it more descriptive.":
+            return "Votre titre est trop court. Rendez-le plus descriptif."
+        elif recommendation == "Your title is the optimal length.":
+            return "Votre titre a une longueur optimale."
+        elif recommendation == "Add a descriptive title tag to your page. This is crucial for SEO.":
+            return "Ajoutez une balise titre descriptive à votre page. C'est crucial pour le SEO."
+            
+        # Meta description recommendations
+        elif recommendation == "Add a meta description to improve CTR from search results.":
             return translate_filter("report.add_meta_description")
-        elif recommendation == "Implement Open Graph tags":
-            return translate_filter("report.implement_open_graph")
+        elif recommendation == "Your meta description is the optimal length.":
+            return "Votre meta description a une longueur optimale."
+        elif recommendation == "Your meta description is too short. Aim for 50-160 characters.":
+            return "Votre meta description est trop courte. Visez entre 50 et 160 caractères."
+        elif recommendation == "Your meta description is too long. Keep it under 160 characters.":
+            return "Votre meta description est trop longue. Gardez-la sous 160 caractères."
+            
+        # Keywords recommendations
         elif recommendation == "While not critical for SEO, meta keywords can help with site organization.":
             return translate_filter("report.while_not_critical")
+        elif recommendation == "Your keyword count is good, though search engines give less weight to the keywords meta tag now.":
+            return "Votre nombre de mots-clés est bon, bien que les moteurs de recherche accordent maintenant moins d'importance à la balise meta keywords."
+        elif recommendation == "Consider adding more keywords, although this tag has diminished SEO value.":
+            return "Envisagez d'ajouter plus de mots-clés, bien que cette balise ait une valeur SEO diminuée."
+        elif recommendation == "Too many keywords may appear as keyword stuffing.":
+            return "Trop de mots-clés peuvent apparaître comme du bourrage de mots-clés."
+            
+        # Open Graph recommendations
+        elif recommendation == "Missing Open Graph tags. Add them to improve appearance when shared on social media.":
+            return "Balises Open Graph manquantes. Ajoutez-les pour améliorer l'apparence lors du partage sur les réseaux sociaux."
+        elif recommendation == "Some Open Graph tags are missing. Complete them for better social media sharing.":
+            return "Certaines balises Open Graph sont manquantes. Complétez-les pour un meilleur partage sur les réseaux sociaux."
+        elif recommendation == "Your Open Graph tags are complete, good for social sharing.":
+            return "Vos balises Open Graph sont complètes, idéales pour le partage social."
+        
+        # Content recommendations
+        elif recommendation == "Add more content to your page.":
+            return "Ajoutez plus de contenu à votre page."
+        elif recommendation == "Add an H1 tag to your page.":
+            return "Ajoutez une balise H1 à votre page."
+        elif recommendation == "Improve your heading structure.":
+            return "Améliorez la structure de vos titres."
+        
+        # Default fallback for non-matched recommendations
         else:
             return recommendation
