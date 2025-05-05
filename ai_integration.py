@@ -35,18 +35,32 @@ def get_seo_recommendations(url, analysis_type, analysis_details, lang_code='en'
     # Check if OpenAI client is available
     if not openai:
         logger.warning("OpenAI client not initialized. Returning fallback recommendations.")
-        return {
-            "summary": "AI-powered recommendations require an OpenAI API key.",
-            "priorities": ["Fix technical errors", "Improve meta tags", "Enhance content"],
-            "recommendations": [
-                {
-                    "title": "API Key Required",
-                    "description": "To access AI-powered recommendations, please provide a valid OpenAI API key in your account settings.",
-                    "steps": ["Go to your profile settings", "Add your OpenAI API key", "Refresh this page to see AI recommendations"]
-                }
-            ],
-            "insights": "The detailed analysis report above provides valuable information about your site's SEO performance."
-        }
+        if lang_code == 'fr':
+            return {
+                "summary": "Les recommandations propulsées par l'IA nécessitent une clé API OpenAI.",
+                "priorities": ["Corriger les erreurs techniques", "Améliorer les balises méta", "Améliorer le contenu"],
+                "recommendations": [
+                    {
+                        "title": "Clé API requise",
+                        "description": "Pour accéder aux recommandations propulsées par l'IA, veuillez fournir une clé API OpenAI valide dans les paramètres de votre compte.",
+                        "steps": ["Accédez aux paramètres de votre profil", "Ajoutez votre clé API OpenAI", "Actualisez cette page pour voir les recommandations IA"]
+                    }
+                ],
+                "insights": "Le rapport d'analyse détaillé ci-dessus fournit des informations précieuses sur les performances SEO de votre site."
+            }
+        else:
+            return {
+                "summary": "AI-powered recommendations require an OpenAI API key.",
+                "priorities": ["Fix technical errors", "Improve meta tags", "Enhance content"],
+                "recommendations": [
+                    {
+                        "title": "API Key Required",
+                        "description": "To access AI-powered recommendations, please provide a valid OpenAI API key in your account settings.",
+                        "steps": ["Go to your profile settings", "Add your OpenAI API key", "Refresh this page to see AI recommendations"]
+                    }
+                ],
+                "insights": "The detailed analysis report above provides valuable information about your site's SEO performance."
+            }
     
     try:
         # Convert analysis details to a formatted string for the AI
@@ -91,18 +105,32 @@ def get_seo_recommendations(url, analysis_type, analysis_details, lang_code='en'
         
     except Exception as e:
         logger.error(f"Error getting AI recommendations: {str(e)}")
-        return {
-            "summary": "Unable to generate AI recommendations at this time.",
-            "priorities": ["Fix technical errors", "Improve meta tags", "Enhance content"],
-            "recommendations": [
-                {
-                    "title": "System Error",
-                    "description": "We encountered an issue generating AI recommendations. Please try again later.",
-                    "steps": ["Check your internet connection", "Refresh the page", "Contact support if the issue persists"]
-                }
-            ],
-            "insights": "Our AI system is temporarily unavailable. Please check the detailed analysis report for recommendations."
-        }
+        if lang_code == 'fr':
+            return {
+                "summary": "Impossible de générer des recommandations IA pour le moment.",
+                "priorities": ["Corriger les erreurs techniques", "Améliorer les balises méta", "Améliorer le contenu"],
+                "recommendations": [
+                    {
+                        "title": "Erreur Système",
+                        "description": "Nous avons rencontré un problème lors de la génération des recommandations IA. Veuillez réessayer plus tard.",
+                        "steps": ["Vérifiez votre connexion internet", "Actualisez la page", "Contactez le support si le problème persiste"]
+                    }
+                ],
+                "insights": "Notre système d'IA est temporairement indisponible. Veuillez consulter le rapport d'analyse détaillé pour des recommandations."
+            }
+        else:
+            return {
+                "summary": "Unable to generate AI recommendations at this time.",
+                "priorities": ["Fix technical errors", "Improve meta tags", "Enhance content"],
+                "recommendations": [
+                    {
+                        "title": "System Error",
+                        "description": "We encountered an issue generating AI recommendations. Please try again later.",
+                        "steps": ["Check your internet connection", "Refresh the page", "Contact support if the issue persists"]
+                    }
+                ],
+                "insights": "Our AI system is temporarily unavailable. Please check the detailed analysis report for recommendations."
+            }
 
 def get_chat_response(user_query, context=None):
     """

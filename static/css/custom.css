@@ -389,6 +389,23 @@ body {
   }
 }
 
+/* Progress bar text color fix */
+.progress-bar {
+  color: #000 !important; /* Ensure text is visible regardless of background */
+  font-weight: bold;
+  text-shadow: 0px 0px 2px rgba(255, 255, 255, 0.5); /* Add subtle text shadow for better contrast */
+}
+
+/* Fix for recommendations in white boxes */
+.card-header.bg-light, 
+.alert-light, 
+.bg-light,
+.list-group-item, 
+.card-body, 
+.recommendation-item {
+  color: #212529 !important; /* Dark text for better contrast on light backgrounds */
+}
+
 /* Responsive Adjustments */
 @media (max-width: 768px) {
   .pricing-card.featured {
