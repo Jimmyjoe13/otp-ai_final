@@ -396,14 +396,62 @@ body {
   text-shadow: 0px 0px 2px rgba(255, 255, 255, 0.5); /* Add subtle text shadow for better contrast */
 }
 
-/* Fix for recommendations in white boxes */
-.card-header.bg-light, 
+/* Fix for recommendations in white/light backgrounds */
+.bg-light, 
 .alert-light, 
-.bg-light,
-.list-group-item, 
-.card-body, 
-.recommendation-item {
+.card-header.bg-light {
   color: #212529 !important; /* Dark text for better contrast on light backgrounds */
+}
+
+/* Fix for recommendation items with light background */
+.recommendation-item, 
+.list-group-item {
+  color: #212529 !important; /* Dark text for better contrast */
+  background-color: rgba(200, 200, 200, 0.15); /* Slightly lightened background */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+/* Special style for light blue recommendation boxes */
+.bg-info.text-white,
+.bg-info-subtle {
+  color: #212529 !important; /* Dark text for better contrast */
+}
+
+/* Alert colors in dashboard */
+.alert,
+.alert-success,
+.alert-warning,
+.alert-danger,
+.alert-info {
+  color: #212529 !important;
+}
+
+/* Ensure dark theme text is visible on dark backgrounds */
+body, 
+.bg-dark, 
+.navbar-dark, 
+.card-body:not(.bg-light),
+.card:not(.bg-light) .card-body,
+.card-text,
+.card-title,
+.recommendation-title,
+.recommendation-content {
+  color: #f8f9fa !important; /* Light text for dark backgrounds */
+}
+
+/* Specific fix for AI recommendation elements */
+.ai-recommendation-card {
+  background-color: rgba(70, 70, 100, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ai-recommendation-card .card-title,
+.ai-recommendation-card .card-text,
+.ai-recommendation-card h3,
+.ai-recommendation-card h4 {
+  color: #f8f9fa !important;
 }
 
 /* Responsive Adjustments */
