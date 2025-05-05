@@ -133,7 +133,7 @@
                                         <p>{{ detail.description }}</p>
                                         {% if detail.recommendation %}
                                             <div class="alert alert-info mb-0">
-                                                <i class="fas fa-lightbulb me-2"></i> <strong>{{ _("report.recommendation") }}:</strong> {{ detail.recommendation }}
+                                                <i class="fas fa-lightbulb me-2"></i> <strong>{{ _("report.recommendation") }}:</strong> {{ detail.recommendation|translate_recommendation }}
                                             </div>
                                         {% endif %}
                                     </div>
@@ -172,7 +172,7 @@
                                         <p>{{ detail.description }}</p>
                                         {% if detail.recommendation %}
                                             <div class="alert alert-info mb-0">
-                                                <i class="fas fa-lightbulb me-2"></i> <strong>{{ _("report.recommendation") }}:</strong> {{ detail.recommendation }}
+                                                <i class="fas fa-lightbulb me-2"></i> <strong>{{ _("report.recommendation") }}:</strong> {{ detail.recommendation|translate_recommendation }}
                                             </div>
                                         {% endif %}
                                     </div>
@@ -212,7 +212,7 @@
                                         <p>{{ detail.description }}</p>
                                         {% if detail.recommendation %}
                                             <div class="alert alert-info mb-0">
-                                                <i class="fas fa-lightbulb me-2"></i> <strong>{{ _("report.recommendation") }}:</strong> {{ detail.recommendation }}
+                                                <i class="fas fa-lightbulb me-2"></i> <strong>{{ _("report.recommendation") }}:</strong> {{ detail.recommendation|translate_recommendation }}
                                             </div>
                                         {% endif %}
                                     </div>
