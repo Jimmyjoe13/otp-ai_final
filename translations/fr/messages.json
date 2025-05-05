@@ -339,6 +339,7 @@
     "delete_reports": "Tous les rapports d'analyse et l'historique",
     "delete_settings": "Paramètres et préférences du compte",
     "delete_subscription": "Informations d'abonnement",
+    "type_delete": "Veuillez taper \"DELETE\" pour confirmer :",
     "delete_confirmation": "Veuillez taper \"DELETE\" pour confirmer :"
   },
   "chatbot": {

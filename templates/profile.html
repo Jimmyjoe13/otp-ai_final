@@ -342,19 +342,19 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Cancel Subscription</h5>
+                <h5 class="modal-title">{{ _('profile.cancel_subscription') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle me-2"></i> <strong>Are you sure you want to cancel?</strong>
+                    <i class="fas fa-exclamation-triangle me-2"></i> <strong>{{ _('profile.cancel_confirm') }}</strong>
                 </div>
-                <p>Your subscription will remain active until the end of your current billing period {% if formatted_dates.subscription_ends_at %}on {{ formatted_dates.subscription_ends_at }}{% else %}{{ _('profile.until_end_of_period') }}{% endif %}.</p>
-                <p>After cancellation, your account will be downgraded to the free plan with limited features.</p>
+                <p>{{ _('profile.cancel_notice') }}</p>
+                <p>{{ _('profile.free_description') }}</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Subscription</button>
-                <button type="button" class="btn btn-danger" id="confirm-cancel">Cancel Subscription</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('profile.keep_subscription') }}</button>
+                <button type="button" class="btn btn-danger" id="confirm-cancel">{{ _('profile.cancel_subscription') }}</button>
             </div>
         </div>
     </div>
@@ -365,27 +365,27 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Delete Account</h5>
+                <h5 class="modal-title">{{ _('profile.delete_title') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle me-2"></i> <strong>Warning: This action cannot be undone!</strong>
+                    <i class="fas fa-exclamation-circle me-2"></i> <strong>{{ _('profile.delete_warning_title') }}</strong>
                 </div>
-                <p>Deleting your account will permanently remove all of your data, including:</p>
+                <p>{{ _('profile.delete_data') }}</p>
                 <ul>
-                    <li>All analysis reports and history</li>
-                    <li>Account settings and preferences</li>
-                    <li>Subscription information</li>
+                    <li>{{ _('profile.delete_reports') }}</li>
+                    <li>{{ _('profile.delete_settings') }}</li>
+                    <li>{{ _('profile.delete_subscription') }}</li>
                 </ul>
                 <div class="mb-3">
-                    <label for="delete_confirmation" class="form-label">Please type "DELETE" to confirm:</label>
+                    <label for="delete_confirmation" class="form-label">{{ _('profile.type_delete') }}</label>
                     <input type="text" class="form-control" id="delete_confirmation">
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirm-delete" disabled>Delete Account</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('common.cancel') }}</button>
+                <button type="button" class="btn btn-danger" id="confirm-delete" disabled>{{ _('profile.delete_account') }}</button>
             </div>
         </div>
     </div>
