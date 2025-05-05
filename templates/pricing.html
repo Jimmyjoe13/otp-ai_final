@@ -328,7 +328,7 @@
                     </h2>
                     <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#pricingFaq">
                         <div class="accordion-body">
-                            Yes, for larger organizations with specific needs, we offer custom enterprise solutions beyond our standard Enterprise plan. Please contact our sales team at sales@opt-ai.com to discuss your requirements.
+                            {{ _('pricing.faq_custom_solutions_answer') }}
                         </div>
                     </div>
                 </div>
@@ -338,14 +338,14 @@
     
     <!-- CTA Section -->
     <div class="text-center py-4">
-        <h3 class="fw-bold mb-3">Ready to optimize your SEO?</h3>
-        <p class="lead mb-4">Join thousands of businesses improving their search rankings with Opt-AI</p>
+        <h3 class="fw-bold mb-3">{{ _('pricing.cta_title') }}</h3>
+        <p class="lead mb-4">{{ _('pricing.cta_description') }}</p>
         <div class="d-grid gap-2 d-md-block">
             {% if current_user.is_authenticated %}
-            <a href="/analyze" class="btn btn-lg btn-primary px-5">Start Analyzing</a>
+            <a href="/analyze" class="btn btn-lg btn-primary px-5">{{ _('pricing.cta_start_analyzing') }}</a>
             {% else %}
-            <a href="/register" class="btn btn-lg btn-primary px-5">Get Started</a>
-            <a href="#" class="btn btn-lg btn-outline-primary px-5">Contact Sales</a>
+            <a href="/register" class="btn btn-lg btn-primary px-5">{{ _('pricing.cta_get_started') }}</a>
+            <a href="#" class="btn btn-lg btn-outline-primary px-5">{{ _('pricing.cta_contact_sales') }}</a>
             {% endif %}
         </div>
     </div>
