@@ -335,18 +335,18 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             let html = `
                 <div class="mb-4">
-                    <h5 class="fw-bold">Summary</h5>
+                    <h5 class="fw-bold">${"{{ _('report.summary') }}"}</h5>
                     <p>${data.summary}</p>
                 </div>
                 
-                <div class="mb-4">
-                    <h5 class="fw-bold">Top Priorities</h5>
+                <div class="mb-4 top-priorities">
+                    <h5 class="fw-bold">${"{{ _('report.top_priorities') }}"}</h5>
                     <ul class="list-group">
             `;
             
             // Add priorities
             data.priorities.forEach(priority => {
-                html += `<li class="list-group-item"><i class="fas fa-arrow-right text-primary me-2"></i> ${priority}</li>`;
+                html += `<li class="list-group-item priority-item"><i class="fas fa-arrow-right text-primary me-2"></i> ${priority}</li>`;
             });
             
             html += `
@@ -354,7 +354,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 
                 <div class="mb-4">
-                    <h5 class="fw-bold">Detailed Recommendations</h5>
+                    <h5 class="fw-bold">${"{{ _('report.detailed_recommendations') }}"}</h5>
             `;
             
             // Add recommendations
@@ -366,7 +366,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                         <div class="card-body">
                             <p>${rec.description}</p>
-                            <h6>Action Steps:</h6>
+                            <h6>${"{{ _('report.action_steps') }}"}</h6>
                             <ol>
                 `;
                 
@@ -385,7 +385,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 
                 <div>
-                    <h5 class="fw-bold">Additional Insights</h5>
+                    <h5 class="fw-bold">${"{{ _('report.insights') }}"}</h5>
                     <p>${data.insights}</p>
                 </div>
             `;
