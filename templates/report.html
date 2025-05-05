@@ -100,9 +100,9 @@
         <div class="card-body p-4" id="ai-recommendations">
             <div class="text-center py-4">
                 <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
+                    <span class="visually-hidden">{{ _('status.loading') }}</span>
                 </div>
-                <p class="mt-2">Generating AI-powered recommendations...</p>
+                <p class="mt-2">{{ _('report.generating_ai_recommendations') }}</p>
             </div>
         </div>
     </div>
@@ -115,7 +115,7 @@
         <div class="col-md-12">
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-transparent">
-                    <h4 class="mb-0"><i class="fas fa-tags me-2"></i> Meta Tags Analysis</h4>
+                    <h4 class="mb-0"><i class="fas fa-tags me-2"></i> {{ _('report.meta_analysis') }}</h4>
                 </div>
                 <div class="card-body p-4">
                     {% set meta_details = details|selectattr('category', 'equalto', 'meta')|list %}
@@ -133,7 +133,7 @@
                                         <p>{{ detail.description }}</p>
                                         {% if detail.recommendation %}
                                             <div class="alert alert-info mb-0">
-                                                <i class="fas fa-lightbulb me-2"></i> <strong>Recommendation:</strong> {{ detail.recommendation }}
+                                                <i class="fas fa-lightbulb me-2"></i> <strong>{{ _("report.recommendation") }}:</strong> {{ detail.recommendation }}
                                             </div>
                                         {% endif %}
                                     </div>
@@ -154,7 +154,7 @@
         <div class="col-md-12">
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-transparent">
-                    <h4 class="mb-0"><i class="fas fa-file-alt me-2"></i> Content Analysis</h4>
+                    <h4 class="mb-0"><i class="fas fa-file-alt me-2"></i> {{ _('report.content_analysis') }}</h4>
                 </div>
                 <div class="card-body p-4">
                     {% set content_details = details|selectattr('category', 'equalto', 'content')|list %}
@@ -172,7 +172,7 @@
                                         <p>{{ detail.description }}</p>
                                         {% if detail.recommendation %}
                                             <div class="alert alert-info mb-0">
-                                                <i class="fas fa-lightbulb me-2"></i> <strong>Recommendation:</strong> {{ detail.recommendation }}
+                                                <i class="fas fa-lightbulb me-2"></i> <strong>{{ _("report.recommendation") }}:</strong> {{ detail.recommendation }}
                                             </div>
                                         {% endif %}
                                     </div>
@@ -194,7 +194,7 @@
         <div class="col-md-12">
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-transparent">
-                    <h4 class="mb-0"><i class="fas fa-cogs me-2"></i> Technical Analysis</h4>
+                    <h4 class="mb-0"><i class="fas fa-cogs me-2"></i> {{ _('report.technical_analysis') }}</h4>
                 </div>
                 <div class="card-body p-4">
                     {% set tech_details = details|selectattr('category', 'equalto', 'technical')|list %}
@@ -212,7 +212,7 @@
                                         <p>{{ detail.description }}</p>
                                         {% if detail.recommendation %}
                                             <div class="alert alert-info mb-0">
-                                                <i class="fas fa-lightbulb me-2"></i> <strong>Recommendation:</strong> {{ detail.recommendation }}
+                                                <i class="fas fa-lightbulb me-2"></i> <strong>{{ _("report.recommendation") }}:</strong> {{ detail.recommendation }}
                                             </div>
                                         {% endif %}
                                     </div>
