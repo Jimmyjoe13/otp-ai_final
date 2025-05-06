@@ -96,11 +96,15 @@ def create_stripe_products():
 
 # Get domain for redirects
 def get_domain():
-    domain = os.environ.get('REPLIT_DEV_DOMAIN')
-    if os.environ.get('REPLIT_DEPLOYMENT'):
-        domains = os.environ.get('REPLIT_DOMAINS', '').split(',')
-        if domains:
-            domain = domains[0]
+    # Prioritize Railway or custom environment variable for domain
+    domain = os.environ.get('DOMAIN')
+    if not domain:
+        # Fallback to Replit environment variables for compatibility
+        domain = os.environ.get('REPLIT_DEV_DOMAIN')
+        if os.environ.get('REPLIT_DEPLOYMENT'):
+            domains = os.environ.get('REPLIT_DOMAINS', '').split(',')
+            if domains:
+                domain = domains[0]
     return domain
 
 # Create Blueprint
