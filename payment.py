@@ -95,6 +95,8 @@ def create_stripe_products():
     logger.info("Stripe products setup complete.")
 
 # Get domain for redirects
+from flask import request
+
 def get_domain():
     # Prioritize Railway or custom environment variable for domain
     domain = os.environ.get('DOMAIN')
@@ -105,6 +107,13 @@ def get_domain():
             domains = os.environ.get('REPLIT_DOMAINS', '').split(',')
             if domains:
                 domain = domains[0]
+    if not domain:
+        # Fallback to request host if running in a web request context
+        try:
+            domain = request.host
+        except RuntimeError:
+            # Outside request context
+            domain = None
     return domain
 
 # Create Blueprint
