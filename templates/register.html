@@ -9,8 +9,8 @@
             <div class="card shadow-sm">
                 <div class="card-body p-4 p-md-5">
                     <div class="text-center mb-4">
-                        <h2 class="fw-bold">{{ _('auth.create_account') }}</h2>
-                        <p class="text-muted">{{ _('auth.start_optimizing') }}</p>
+                        <h2 class="fw-bold">{{ _('auth.register') }}</h2>
+                        <p class="text-muted">Commencez à optimiser votre site dès aujourd'hui</p>
                     </div>
                     
                     <form method="POST" action="{{ url_for('auth.register') }}">
@@ -18,7 +18,7 @@
                         
                         <div class="mb-3">
                             <label for="username" class="form-label">{{ _('auth.username') }}</label>
-                            {{ form.username(class="form-control", placeholder=_('auth.choose_username')) }}
+                            {{ form.username(class="form-control", placeholder=_('auth.username')) }}
                             {% if form.username.errors %}
                                 <div class="invalid-feedback d-block">
                                     {% for error in form.username.errors %}
@@ -30,7 +30,7 @@
                         
                         <div class="mb-3">
                             <label for="email" class="form-label">{{ _('auth.email') }}</label>
-                            {{ form.email(class="form-control", placeholder=_('auth.enter_email')) }}
+                            {{ form.email(class="form-control", placeholder=_('auth.email')) }}
                             {% if form.email.errors %}
                                 <div class="invalid-feedback d-block">
                                     {% for error in form.email.errors %}
@@ -42,7 +42,7 @@
                         
                         <div class="mb-3">
                             <label for="password" class="form-label">{{ _('auth.password') }}</label>
-                            {{ form.password(class="form-control", placeholder=_('auth.create_password')) }}
+                            {{ form.password(class="form-control", placeholder=_('auth.password')) }}
                             {% if form.password.errors %}
                                 <div class="invalid-feedback d-block">
                                     {% for error in form.password.errors %}
@@ -54,7 +54,7 @@
                         
                         <div class="mb-4">
                             <label for="confirm_password" class="form-label">{{ _('auth.confirm_password') }}</label>
-                            {{ form.confirm_password(class="form-control", placeholder=_('auth.confirm_your_password')) }}
+                            {{ form.confirm_password(class="form-control", placeholder=_('auth.confirm_password')) }}
                             {% if form.confirm_password.errors %}
                                 <div class="invalid-feedback d-block">
                                     {% for error in form.confirm_password.errors %}
@@ -70,27 +70,27 @@
                     </form>
                     
                     <div class="mt-4 text-center">
-                        <p>{{ _('auth.already_have_account') }} <a href="{{ url_for('auth.login') }}" class="text-decoration-none">{{ _('auth.login') }}</a></p>
+                        <p>{{ _('auth.already_account') }} <a href="{{ url_for('auth.login') }}" class="text-decoration-none">{{ _('auth.login') }}</a></p>
                     </div>
                     
                     <hr class="my-4">
                     
                     <div class="text-center">
-                        <p class="small text-muted">{{ _('auth.agree_to_terms') }} <a href="#" class="text-decoration-none">{{ _('auth.terms_of_service') }}</a> {{ _('auth.and') }} <a href="#" class="text-decoration-none">{{ _('auth.privacy_policy') }}</a>.</p>
+                        <p class="small text-muted">En vous inscrivant, vous acceptez nos <a href="#" class="text-decoration-none">Conditions d'utilisation</a> et notre <a href="#" class="text-decoration-none">Politique de confidentialité</a>.</p>
                     </div>
                 </div>
             </div>
             
             <div class="card mt-4 shadow-sm">
-                <div class="card-body p-4">
-                    <h5 class="fw-bold">{{ _('auth.free_account_benefits') }}</h5>
-                    <ul class="mb-0">
-                        <li>{{ _('auth.benefit_meta_tags') }}</li>
-                        <li>{{ _('auth.benefit_dashboard') }}</li>
-                        <li>{{ _('auth.benefit_recommendations') }}</li>
-                        <li>{{ _('auth.benefit_upgrade') }}</li>
-                    </ul>
-                </div>
+            <div class="card-body p-4">
+                <h5 class="fw-bold">Avantages du compte gratuit</h5>
+                <ul class="mb-0">
+                    <li>Analyse des balises méta</li>
+                    <li>Tableau de bord personnalisé</li>
+                    <li>Recommandations SEO basiques</li>
+                    <li>Possibilité de mise à niveau</li>
+                </ul>
+            </div>
             </div>
         </div>
     </div>
