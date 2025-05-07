@@ -205,6 +205,14 @@
                         </div>
                     </div>
                     
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5>{{ _('profile.usage_stats') }}</h5>
+                        <select id="stats-period-select" class="form-select form-select-sm w-auto">
+                            <option value="last_month">Dernier mois</option>
+                            <option value="last_quarter">Dernier trimestre</option>
+                            <option value="last_year">Dernière année</option>
+                        </select>
+                    </div>
                     <div id="usage-chart-container" style="height: 300px;">
                         <canvas id="usage-chart"></canvas>
                     </div>
@@ -424,69 +432,91 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize usage chart
     const ctx = document.getElementById('usage-chart').getContext('2d');
-    
-    // Fetch real-time data from API
-    fetch('/api/profile/stats')
-        .then(response => response.json())
-        .then(data => {
-            const usageData = {
-                labels: data.labels,
-                datasets: [
-                    {
-                        label: 'Analyses',
-                        data: data.analyses,
-                        backgroundColor: 'rgba(13, 110, 253, 0.5)',
-                        borderColor: 'rgba(13, 110, 253, 1)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'AI Recommendations',
-                        data: data.ai_recommendations,
-                        backgroundColor: 'rgba(25, 135, 84, 0.5)',
-                        borderColor: 'rgba(25, 135, 84, 1)',
-                        borderWidth: 1
-                    }
-                ]
-            };
-            
-            new Chart(ctx, {
-                type: 'bar',
-                data: usageData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Count'
+    let usageChart = null;
+
+    // Function to fetch and update chart data
+    function fetchAndUpdateChart(period = 'last_month') {
+        fetch(`/api/profile/stats?period=${period}`)
+            .then(response => response.json())
+            .then(data => {
+                const usageData = {
+                    labels: data.labels,
+                    datasets: [
+                        {
+                            label: 'Analyses',
+                            data: data.analyses,
+                            backgroundColor: 'rgba(13, 110, 253, 0.5)',
+                            borderColor: 'rgba(13, 110, 253, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'AI Recommendations',
+                            data: data.ai_recommendations,
+                            backgroundColor: 'rgba(25, 135, 84, 0.5)',
+                            borderColor: 'rgba(25, 135, 84, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                };
+
+                if (usageChart) {
+                    usageChart.data = usageData;
+                    usageChart.update();
+                } else {
+                    usageChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: usageData,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Count'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                }
                             }
                         }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        }
-                    }
+                    });
                 }
+            })
+            .catch(error => {
+                console.error('Error fetching profile stats:', error);
+                // Fallback to empty chart or show error message
             });
-        })
-        .catch(error => {
-            console.error('Error fetching profile stats:', error);
-            // Fallback to empty chart or show error message
-        });
-    
+    }
+
+    // Initial fetch
+    fetchAndUpdateChart();
+
+    // Period selector change event
+    const periodSelect = document.getElementById('stats-period-select');
+    periodSelect.addEventListener('change', () => {
+        fetchAndUpdateChart(periodSelect.value);
+    });
+
+    // Auto-refresh every 5 minutes
+    setInterval(() => {
+        fetchAndUpdateChart(periodSelect.value);
+    }, 5 * 60 * 1000);
+
     // Delete account button
     document.getElementById('delete-account-btn').addEventListener('click', function() {
         const deleteModal = new bootstrap.Modal(document.getElementById('deleteAccountModal'));
         deleteModal.show();
     });
-    
+
     // Delete confirmation input
     const deleteConfirmInput = document.getElementById('delete_confirmation');
     const confirmDeleteBtn = document.getElementById('confirm-delete');
-    
+
     deleteConfirmInput.addEventListener('input', function() {
         confirmDeleteBtn.disabled = this.value !== 'DELETE';
     });
