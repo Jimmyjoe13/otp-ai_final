@@ -13,3 +13,8 @@ def index():
 @login_required
 def dashboard():
     return render_template('dashboard.html')
+
+@main.route('/pricing')
+def pricing():
+    from datetime import datetime
+    return render_template('pricing.html', now=datetime.now())
