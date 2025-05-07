@@ -3,9 +3,11 @@ from flask_login import login_required
 
 main = Blueprint('main', __name__)
 
+from datetime import datetime
+
 @main.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', now=datetime.now())
 
 @main.route('/dashboard')
 @login_required
