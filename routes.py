@@ -1,177 +1,50 @@
-import json
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
+from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
-from app import db
-from models import Analysis, AnalysisDetail, User
-from seo_analyzer import analyze_url
-from ai_integration import get_seo_recommendations
-from utils import requires_subscription
+from datetime import datetime, timedelta
+from models import Analysis  # Assuming Analysis is the model for SEO analyses
+from collections import defaultdict
 
-main_bp = Blueprint('main', __name__)
+api_bp = Blueprint('api', __name__)
 
-@main_bp.route('/')
-def index():
-    from datetime import datetime
-    return render_template('index.html', now=datetime.now())
-
-@main_bp.route('/dashboard')
+@api_bp.route('/api/profile/stats')
 @login_required
-def dashboard():
-    from datetime import datetime
-    # Get user's analyses
-    analyses = Analysis.query.filter_by(user_id=current_user.id).order_by(Analysis.created_at.desc()).all()
-    return render_template('dashboard.html', analyses=analyses, now=datetime.now())
+def profile_stats():
+    period = request.args.get('period', 'last_month')
+    now = datetime.utcnow()
 
-@main_bp.route('/analyze', methods=['GET', 'POST'])
-@login_required
-def analyze():
-    from datetime import datetime
-    if request.method == 'POST':
-        url = request.form.get('url')
-        analysis_type = request.form.get('analysis_type', 'meta')
-        
-        # Validate URL
-        if not url:
-            flash('Please enter a valid URL', 'danger')
-            return redirect(url_for('main.analyze'))
-        
-        # Check if user has permission for this analysis type based on subscription
-        if not check_analysis_permission(analysis_type):
-            flash(f'Your current subscription does not allow {analysis_type} analysis. Please upgrade.', 'warning')
-            return redirect(url_for('main.pricing'))
-        
-        try:
-            # Create analysis record
-            analysis = Analysis(
-                url=url,
-                analysis_type=analysis_type,
-                user_id=current_user.id
-            )
-            db.session.add(analysis)
-            db.session.commit()
-            
-            # Run analysis
-            results = analyze_url(url, analysis_type)
-            
-            # Save analysis details
-            for category, components in results['details'].items():
-                for component, data in components.items():
-                    detail = AnalysisDetail(
-                        analysis_id=analysis.id,
-                        category=category,
-                        component=component,
-                        status=data['status'],
-                        score=data['score'],
-                        description=data.get('description', ''),
-                        recommendation=data.get('recommendation', '')
-                    )
-                    db.session.add(detail)
-            
-            # Update analysis scores
-            analysis.meta_score = results['scores']['meta']
-            analysis.content_score = results['scores'].get('content', 0)
-            analysis.technical_score = results['scores'].get('technical', 0)
-            analysis.overall_score = results['scores']['overall']
-            db.session.commit()
-            
-            return redirect(url_for('main.report', analysis_id=analysis.id))
-        
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Error analyzing URL: {str(e)}', 'danger')
-            return redirect(url_for('main.analyze'))
-    
-    return render_template('analyze.html', now=datetime.now())
+    if period == 'last_month':
+        start_date = now - timedelta(days=30)
+    elif period == 'last_quarter':
+        start_date = now - timedelta(days=90)
+    elif period == 'last_year':
+        start_date = now - timedelta(days=365)
+    else:
+        start_date = now - timedelta(days=30)  # default
 
-@main_bp.route('/report/<int:analysis_id>')
-@login_required
-def report(analysis_id):
-    from datetime import datetime
-    analysis = Analysis.query.get_or_404(analysis_id)
-    
-    # Security check - ensure analysis belongs to current user
-    if analysis.user_id != current_user.id:
-        abort(403)
-    
-    details = analysis.details.all()
-    return render_template('report.html', analysis=analysis, details=details, now=datetime.now())
+    # Query analyses for current user in the period
+    analyses = Analysis.query.filter(
+        Analysis.user_id == current_user.id,
+        Analysis.created_at >= start_date
+    ).all()
 
-@main_bp.route('/api/ai-recommendations/<int:analysis_id>')
-@login_required
-@requires_subscription(['premium', 'enterprise'])
-def ai_recommendations(analysis_id):
-    analysis = Analysis.query.get_or_404(analysis_id)
-    
-    # Security check - ensure analysis belongs to current user
-    if analysis.user_id != current_user.id:
-        abort(403)
-    
-    # Get analysis details
-    details = analysis.details.all()
-    details_dict = {f"{d.category}.{d.component}": {
-        "status": d.status,
-        "score": d.score,
-        "description": d.description,
-        "recommendation": d.recommendation
-    } for d in details}
-    
-    # Get the current language from Flask g object
-    from flask import g
-    current_lang = getattr(g, 'locale', 'en')
-    
-    # Get AI recommendations with the current language
-    recommendations = get_seo_recommendations(analysis.url, analysis.analysis_type, details_dict, lang_code=current_lang)
-    
-    return jsonify(recommendations)
+    # Aggregate data by week
+    data_by_week = defaultdict(lambda: {'analyses': 0, 'ai_recommendations': 0})
 
-@main_bp.route('/pricing')
-def pricing():
-    from datetime import datetime
-    return render_template('pricing.html', now=datetime.now())
-
-@main_bp.route('/profile')
-@login_required
-def profile():
-    from datetime import datetime, timedelta
-    
-    # Format the dates for profile page to avoid template date formatting errors
-    now = datetime.now()
-    formatted_dates = {
-        'subscription_ends_at': current_user.subscription_ends_at.strftime('%B %d, %Y') if current_user.subscription_ends_at else None,
-        'last_payment_date': (current_user.subscription_ends_at - timedelta(days=30)).strftime('%b %d, %Y') if current_user.subscription_ends_at else now.strftime('%b %d, %Y')
-    }
-    
-    return render_template('profile.html', now=now, formatted_dates=formatted_dates)
-
-@main_bp.route('/api/analyses')
-@login_required
-def get_analyses():
-    analyses = Analysis.query.filter_by(user_id=current_user.id).order_by(Analysis.created_at.desc()).all()
-    result = []
-    
     for analysis in analyses:
-        result.append({
-            'id': analysis.id,
-            'url': analysis.url,
-            'type': analysis.analysis_type,
-            'date': analysis.created_at.strftime('%Y-%m-%d %H:%M'),
-            'overall_score': analysis.overall_score
-        })
-    
-    return jsonify(result)
+        week_label = analysis.created_at.strftime('Week %U')
+        data_by_week[week_label]['analyses'] += 1
+        # Assuming analysis has a field ai_recommendations_count
+        data_by_week[week_label]['ai_recommendations'] += getattr(analysis, 'ai_recommendations_count', 0)
 
-# Helper function to check if user has permission for analysis type
-def check_analysis_permission(analysis_type):
-    if analysis_type == 'meta':
-        return True  # All users can do meta analysis
-    
-    if analysis_type == 'partial' and current_user.subscription_status in ['basic', 'premium', 'enterprise']:
-        return True
-        
-    if analysis_type == 'complete' and current_user.subscription_status in ['premium', 'enterprise']:
-        return True
-        
-    if analysis_type == 'deep' and current_user.subscription_status == 'enterprise':
-        return True
-        
-    return False
+    # Sort weeks
+    sorted_weeks = sorted(data_by_week.keys())
+
+    labels = sorted_weeks
+    analyses_counts = [data_by_week[week]['analyses'] for week in sorted_weeks]
+    ai_recommendations_counts = [data_by_week[week]['ai_recommendations'] for week in sorted_weeks]
+
+    return jsonify({
+        'labels': labels,
+        'analyses': analyses_counts,
+        'ai_recommendations': ai_recommendations_counts
+    })
