@@ -18,3 +18,8 @@ def dashboard():
 def pricing():
     from datetime import datetime
     return render_template('pricing.html', now=datetime.now())
+
+@main.route('/analyze')
+@login_required
+def analyze():
+    return render_template('analyze.html')
