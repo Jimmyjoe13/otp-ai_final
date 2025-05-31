@@ -6,68 +6,101 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Définir des exceptions personnalisées pour une meilleure gestion des erreurs
+class SeoAnalysisError(Exception):
+    """Classe de base pour les erreurs d'analyse SEO."""
+    pass
+
+class ContentFetchError(SeoAnalysisError):
+    """Erreur lors de la récupération du contenu de l'URL."""
+    pass
+
+class HtmlParsingError(SeoAnalysisError):
+    """Erreur lors du parsing du HTML."""
+    pass
+
 def analyze_url(url, analysis_type='meta'):
     """
-    Analyze a URL for SEO performance
-    
-    Parameters:
-    - url: URL to analyze
-    - analysis_type: Type of analysis (meta, partial, complete, deep)
-    
-    Returns:
-    - Dictionary with analysis results
+    Analyze a URL for SEO performance.
     """
+    logger.info(f"Starting analysis for {url}, type: {analysis_type}")
     try:
-        # Get URL content
+        # Get URL content with a common User-Agent and error handling
         headers = {
-            'User-Agent': 'Opt-AI SEO Analyzer/1.0',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'DNT': '1', 
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1'
         }
-        response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()
-        
+        try:
+            response = requests.get(url, headers=headers, timeout=20, allow_redirects=True)
+            response.raise_for_status() 
+            logger.debug(f"Successfully fetched content for {url}, status: {response.status_code}")
+        except requests.exceptions.Timeout:
+            logger.error(f"Timeout while trying to fetch {url}")
+            raise ContentFetchError(f"Timeout: The request to {url} timed out after 20 seconds.")
+        except requests.exceptions.TooManyRedirects:
+            logger.error(f"Too many redirects for {url}")
+            raise ContentFetchError(f"RedirectError: Too many redirects for {url}.")
+        except requests.exceptions.HTTPError as http_err:
+            logger.error(f"HTTP error occurred for {url}: {http_err}")
+            raise ContentFetchError(f"HTTPError: Failed to fetch content from {url}. Status: {response.status_code}. Error: {http_err}")
+        except requests.exceptions.RequestException as req_err:
+            logger.error(f"Request failed for {url}: {str(req_err)}")
+            raise ContentFetchError(f"RequestError: Failed to fetch content from {url}. Error: {str(req_err)}")
+
         # Parse HTML
-        soup = BeautifulSoup(response.text, 'html.parser')
+        try:
+            soup = BeautifulSoup(response.text, 'html.parser')
+            logger.debug(f"Successfully parsed HTML for {url}")
+        except Exception as parse_err: # Attraper des erreurs plus larges de BeautifulSoup si nécessaire
+            logger.error(f"Failed to parse HTML for {url}: {str(parse_err)}")
+            raise HtmlParsingError(f"ParsingError: Could not parse HTML content from {url}. Error: {str(parse_err)}")
         
-        # Prepare result structure
         results = {
-            'url': url,
-            'analysis_type': analysis_type,
-            'scores': {
-                'meta': 0,
-                'overall': 0
-            },
-            'details': {
-                'meta': {}
-            }
+            'url': url, 'analysis_type': analysis_type,
+            'scores': {'meta': 0, 'content': 0, 'technical': 0, 'overall': 0}, # Initialiser tous les scores
+            'details': {'meta': {}, 'content': {}, 'technical': {}} # Initialiser toutes les sections de détails
         }
         
-        # Analyze meta tags
         analyze_meta_tags(soup, results)
         
-        # Additional analysis based on type
         if analysis_type in ['partial', 'complete', 'deep']:
-            results['scores']['content'] = 0
-            results['details']['content'] = {}
             analyze_content(soup, results)
             
         if analysis_type in ['complete', 'deep']:
-            results['scores']['technical'] = 0
-            results['details']['technical'] = {}
             analyze_technical(soup, url, results)
             
         # Calculate overall score
-        if analysis_type == 'meta':
-            results['scores']['overall'] = results['scores']['meta']
-        elif analysis_type == 'partial':
-            results['scores']['overall'] = (results['scores']['meta'] + results['scores']['content']) // 2
-        else:
-            results['scores']['overall'] = (results['scores']['meta'] + results['scores']['content'] + results['scores']['technical']) // 3
+        scores_to_average = [results['scores']['meta']]
+        if analysis_type in ['partial', 'complete', 'deep']:
+            scores_to_average.append(results['scores']['content'])
+        if analysis_type in ['complete', 'deep']:
+            scores_to_average.append(results['scores']['technical'])
         
+        if scores_to_average:
+            results['scores']['overall'] = sum(scores_to_average) // len(scores_to_average)
+        else:
+            results['scores']['overall'] = 0 # Devrait toujours y avoir au moins le score méta
+
+        logger.info(f"Analysis for {url} completed. Overall score: {results['scores']['overall']}")
         return results
         
+    except ContentFetchError as e: 
+        logger.error(f"ContentFetchError during analysis of {url}: {str(e)}")
+        raise # Remonter l'erreur pour que la route principale puisse l'afficher
+    except HtmlParsingError as e:
+        logger.error(f"HtmlParsingError during analysis of {url}: {str(e)}")
+        raise
     except Exception as e:
-        logger.error(f"Error analyzing URL {url}: {str(e)}")
-        raise Exception(f"Failed to analyze URL: {str(e)}")
+        logger.error(f"Unexpected error analyzing URL {url}: {str(e)}", exc_info=True)
+        raise SeoAnalysisError(f"An unexpected error occurred during analysis of {url}: {str(e)}")
+
+# Les fonctions analyze_meta_tags, analyze_content, analyze_technical restent inchangées pour l'instant
+# ... (coller ici le reste des fonctions analyze_meta_tags, analyze_content, analyze_technical)
+# ... (Assurez-vous que ces fonctions utilisent logger.debug ou logger.info pour les messages internes si besoin)
 
 def analyze_meta_tags(soup, results):
     """Analyze meta tags for SEO"""
@@ -75,387 +108,118 @@ def analyze_meta_tags(soup, results):
     meta_items = 0
     
     # Title analysis
-    title = soup.title.string if soup.title else None
-    if title:
-        title_length = len(title)
-        if 10 <= title_length <= 60:
-            status = 'good'
-            score = 100
-            recommendation = "Your title is the optimal length."
-        elif title_length < 10:
-            status = 'error'
-            score = 30
-            recommendation = "Your title is too short. Make it more descriptive."
-        else:
-            status = 'warning'
-            score = 70
-            recommendation = "Your title is too long. Keep it under 60 characters for better visibility in search results."
-            
-        results['details']['meta']['title'] = {
-            'status': status,
-            'score': score,
-            'description': f"Title: {title} ({title_length} characters)",
-            'recommendation': recommendation
-        }
-        meta_score += score
-        meta_items += 1
+    title_tag = soup.title
+    title_text = title_tag.string if title_tag else None
+    if title_text:
+        title_length = len(title_text.strip())
+        if 10 <= title_length <= 60: status, score, recommendation = 'good', 100, "Optimal title length."
+        elif title_length < 10: status, score, recommendation = 'error', 30, "Title too short. Make it more descriptive."
+        else: status, score, recommendation = 'warning', 70, "Title too long. Keep under 60 characters."
+        results['details']['meta']['title'] = {'status': status, 'score': score, 'description': f"Title: {title_text.strip()} ({title_length} chars)", 'recommendation': recommendation, 'value': title_text.strip()}
+        meta_score += score; meta_items += 1
     else:
-        results['details']['meta']['title'] = {
-            'status': 'error',
-            'score': 0,
-            'description': "Missing page title",
-            'recommendation': "Add a descriptive title tag to your page. This is crucial for SEO."
-        }
+        results['details']['meta']['title'] = {'status': 'error', 'score': 0, 'description': "Missing page title.", 'recommendation': "Add a descriptive title tag."}
         meta_items += 1
     
     # Meta description
-    meta_desc = soup.find('meta', attrs={'name': 'description'})
-    if meta_desc and meta_desc.get('content'):
-        desc_content = meta_desc['content']
-        desc_length = len(desc_content)
-        
-        if 50 <= desc_length <= 160:
-            status = 'good'
-            score = 100
-            recommendation = "Your meta description is the optimal length."
-        elif desc_length < 50:
-            status = 'warning'
-            score = 50
-            recommendation = "Your meta description is too short. Aim for 50-160 characters."
-        else:
-            status = 'warning'
-            score = 70
-            recommendation = "Your meta description is too long. Keep it under 160 characters."
-            
-        results['details']['meta']['description'] = {
-            'status': status,
-            'score': score,
-            'description': f"Description: {desc_content[:100]}... ({desc_length} characters)",
-            'recommendation': recommendation
-        }
-        meta_score += score
-        meta_items += 1
+    meta_desc_tag = soup.find('meta', attrs={'name': 'description'})
+    meta_desc_content = meta_desc_tag['content'].strip() if meta_desc_tag and meta_desc_tag.get('content') else None
+    if meta_desc_content:
+        desc_length = len(meta_desc_content)
+        if 50 <= desc_length <= 160: status, score, recommendation = 'good', 100, "Optimal meta description length."
+        elif desc_length < 50: status, score, recommendation = 'warning', 50, "Meta description too short (aim 50-160 chars)."
+        else: status, score, recommendation = 'warning', 70, "Meta description too long (under 160 chars)."
+        results['details']['meta']['description'] = {'status': status, 'score': score, 'description': f"Length: {desc_length} chars", 'recommendation': recommendation, 'value': meta_desc_content[:200] + "..."}
+        meta_score += score; meta_items += 1
     else:
-        results['details']['meta']['description'] = {
-            'status': 'error',
-            'score': 0,
-            'description': "Missing meta description",
-            'recommendation': "Add a meta description tag to improve CTR from search results."
-        }
+        results['details']['meta']['description'] = {'status': 'error', 'score': 0, 'description': "Missing meta description.", 'recommendation': "Add a meta description."}
         meta_items += 1
-    
-    # Meta keywords
-    meta_keywords = soup.find('meta', attrs={'name': 'keywords'})
-    if meta_keywords and meta_keywords.get('content'):
-        keywords = meta_keywords['content']
-        keyword_count = len(keywords.split(','))
         
-        if 3 <= keyword_count <= 10:
-            status = 'good'
-            score = 80
-            recommendation = "Your keyword count is good, though search engines give less weight to the keywords meta tag now."
-        elif keyword_count < 3:
-            status = 'warning'
-            score = 50
-            recommendation = "Consider adding more keywords, although this tag has diminished SEO value."
-        else:
-            status = 'warning'
-            score = 60
-            recommendation = "Too many keywords may appear as keyword stuffing."
-            
-        results['details']['meta']['keywords'] = {
-            'status': status,
-            'score': score,
-            'description': f"Keywords: {keywords[:100]}... ({keyword_count} keywords)",
-            'recommendation': recommendation
-        }
-        meta_score += score
-        meta_items += 1
+    # Meta keywords (moins important mais vérifié)
+    meta_kw_tag = soup.find('meta', attrs={'name': 'keywords'})
+    meta_kw_content = meta_kw_tag['content'].strip() if meta_kw_tag and meta_kw_tag.get('content') else None
+    if meta_kw_content:
+        kw_count = len(meta_kw_content.split(','))
+        status, score, recommendation = 'info', 70, "Meta keywords are less impactful now but can be used."
+        results['details']['meta']['keywords'] = {'status': status, 'score': score, 'description': f"{kw_count} keywords found.", 'recommendation': recommendation, 'value': meta_kw_content[:200] + "..."}
     else:
-        results['details']['meta']['keywords'] = {
-            'status': 'warning',
-            'score': 50,
-            'description': "Missing meta keywords",
-            'recommendation': "While not critical for SEO, meta keywords can still help with site organization."
-        }
-        meta_score += 50
-        meta_items += 1
+        status, score, recommendation = 'info', 50, "No meta keywords tag found."
+        results['details']['meta']['keywords'] = {'status': status, 'score': score, 'description': "Missing meta keywords.", 'recommendation': recommendation}
+    meta_score += score; meta_items += 1
+
+    # OG tags
+    og_title = soup.find('meta', property='og:title')
+    og_desc = soup.find('meta', property='og:description')
+    og_image = soup.find('meta', property='og:image')
+    og_tags_found = sum(1 for tag in [og_title, og_desc, og_image] if tag and tag.get('content'))
+    if og_tags_found == 3: status, score, recommendation = 'good', 100, "All key Open Graph tags present."
+    elif og_tags_found > 0: status, score, recommendation = 'warning', 60, f"{3-og_tags_found} Open Graph tags missing."
+    else: status, score, recommendation = 'error', 20, "Open Graph tags missing."
+    results['details']['meta']['og_tags'] = {'status': status, 'score': score, 'description': f"{og_tags_found}/3 OG tags found.", 'recommendation': recommendation}
+    meta_score += score; meta_items += 1
     
-    # OG tags (Open Graph)
-    og_title = soup.find('meta', attrs={'property': 'og:title'})
-    og_desc = soup.find('meta', attrs={'property': 'og:description'})
-    og_image = soup.find('meta', attrs={'property': 'og:image'})
-    
-    if og_title and og_desc and og_image:
-        status = 'good'
-        score = 100
-        recommendation = "Your Open Graph tags are complete, good for social sharing."
-    elif og_title or og_desc or og_image:
-        status = 'warning'
-        score = 60
-        recommendation = "Some Open Graph tags are missing. Complete them for better social media sharing."
-    else:
-        status = 'error'
-        score = 20
-        recommendation = "Missing Open Graph tags. Add them to improve appearance when shared on social media."
-        
-    results['details']['meta']['og_tags'] = {
-        'status': status,
-        'score': score,
-        'description': f"Open Graph tags: {1 if og_title else 0}/1 title, {1 if og_desc else 0}/1 description, {1 if og_image else 0}/1 image",
-        'recommendation': recommendation
-    }
-    meta_score += score
-    meta_items += 1
-    
-    # Calculate average meta score
     results['scores']['meta'] = meta_score // meta_items if meta_items > 0 else 0
 
 def analyze_content(soup, results):
-    """Analyze page content for SEO"""
-    content_score = 0
-    content_items = 0
+    content_score = 0; content_items = 0
     
-    # Headings analysis
     h1_tags = soup.find_all('h1')
     h1_count = len(h1_tags)
-    
-    if h1_count == 1:
-        status = 'good'
-        score = 100
-        recommendation = "Perfect! Your page has exactly one H1 tag."
-    elif h1_count == 0:
-        status = 'error'
-        score = 0
-        recommendation = "Your page is missing an H1 tag. Add one that includes your primary keyword."
-    else:
-        status = 'warning'
-        score = 50
-        recommendation = f"Your page has {h1_count} H1 tags. It's best to have exactly one H1 tag."
-        
-    results['details']['content']['h1_tag'] = {
-        'status': status,
-        'score': score,
-        'description': f"H1 tags: {h1_count}",
-        'recommendation': recommendation
-    }
-    content_score += score
-    content_items += 1
-    
-    # Heading structure
-    headings = {
-        'h1': len(soup.find_all('h1')),
-        'h2': len(soup.find_all('h2')),
-        'h3': len(soup.find_all('h3')),
-        'h4': len(soup.find_all('h4')),
-        'h5': len(soup.find_all('h5')),
-        'h6': len(soup.find_all('h6'))
-    }
-    
-    if headings['h1'] == 1 and headings['h2'] >= 1:
-        status = 'good'
-        score = 100
-        recommendation = "Your heading structure follows best practices."
-    elif headings['h1'] == 1 and headings['h2'] == 0:
-        status = 'warning'
-        score = 70
-        recommendation = "Your page has an H1 but no H2 tags. Consider adding H2 tags to structure your content."
-    else:
-        status = 'warning'
-        score = 50
-        recommendation = "Your heading structure is not optimal. Ensure you have one H1 followed by H2 and H3 tags."
-        
-    results['details']['content']['heading_structure'] = {
-        'status': status,
-        'score': score,
-        'description': f"Headings: {headings['h1']} H1, {headings['h2']} H2, {headings['h3']} H3, {headings['h4']} H4, {headings['h5']} H5, {headings['h6']} H6",
-        'recommendation': recommendation
-    }
-    content_score += score
-    content_items += 1
-    
-    # Content length
-    paragraphs = soup.find_all('p')
-    text_content = ' '.join([p.get_text() for p in paragraphs])
+    if h1_count == 1: status, score, recommendation = 'good', 100, "One H1 tag found."
+    elif h1_count == 0: status, score, recommendation = 'error', 0, "Missing H1 tag."
+    else: status, score, recommendation = 'warning', 50, f"{h1_count} H1 tags found. Aim for one."
+    results['details']['content']['h1_tag'] = {'status': status, 'score': score, 'description': f"{h1_count} H1 tags.", 'recommendation': recommendation}
+    content_score += score; content_items += 1
+
+    headings = {f'h{i}': len(soup.find_all(f'h{i}')) for i in range(1, 7)}
+    if headings['h1'] == 1 and headings['h2'] >= 1: status, score, recommendation = 'good', 100, "Good heading structure."
+    else: status, score, recommendation = 'warning', 60, "Suboptimal heading structure. Ensure H1 is followed by H2s etc."
+    desc_str = ", ".join([f"{count} H{i}" for i, count in headings.items()])
+    results['details']['content']['heading_structure'] = {'status': status, 'score': score, 'description': desc_str, 'recommendation': recommendation}
+    content_score += score; content_items += 1
+
+    text_content = ' '.join(p.get_text(separator=' ', strip=True) for p in soup.find_all('p'))
     word_count = len(text_content.split())
-    
-    if word_count >= 300:
-        status = 'good'
-        score = 100
-        recommendation = "Your content length is good for SEO."
-    elif word_count >= 100:
-        status = 'warning'
-        score = 70
-        recommendation = "Your content is a bit short. Aim for at least 300 words for better SEO performance."
-    else:
-        status = 'error'
-        score = 30
-        recommendation = "Your content is too short. Create more comprehensive content with at least 300 words."
-        
-    results['details']['content']['content_length'] = {
-        'status': status,
-        'score': score,
-        'description': f"Content: {word_count} words",
-        'recommendation': recommendation
-    }
-    content_score += score
-    content_items += 1
-    
-    # Image alt text
+    if word_count >= 300: status, score, recommendation = 'good', 100, "Good content length."
+    elif word_count >= 100: status, score, recommendation = 'warning', 70, "Content a bit short (aim 300+ words)."
+    else: status, score, recommendation = 'error', 30, "Content too short."
+    results['details']['content']['content_length'] = {'status': status, 'score': score, 'description': f"{word_count} words.", 'recommendation': recommendation}
+    content_score += score; content_items += 1
+
     images = soup.find_all('img')
-    images_with_alt = [img for img in images if img.get('alt')]
-    img_count = len(images)
-    img_with_alt_count = len(images_with_alt)
+    img_alts = sum(1 for img in images if img.get('alt', '').strip())
+    if not images: status, score, recommendation = 'info', 70, "No images found. Consider adding relevant images."
+    elif img_alts == len(images): status, score, recommendation = 'good', 100, "All images have alt text."
+    else: status, score, recommendation = 'warning', 60, f"{len(images) - img_alts} images missing alt text."
+    results['details']['content']['image_alt'] = {'status': status, 'score': score, 'description': f"{img_alts}/{len(images)} images with alt text.", 'recommendation': recommendation}
+    content_score += score; content_items += 1
     
-    if img_count == 0:
-        status = 'warning'
-        score = 70
-        recommendation = "Your page has no images. Consider adding relevant images with alt text to improve engagement."
-    elif img_with_alt_count == img_count:
-        status = 'good'
-        score = 100
-        recommendation = "All images have alt text. Great job!"
-    elif img_with_alt_count >= img_count * 0.8:
-        status = 'warning'
-        score = 80
-        recommendation = "Most images have alt text, but some are missing. Add alt text to all images for better accessibility and SEO."
-    else:
-        status = 'error'
-        score = 40
-        recommendation = "Many images are missing alt text. Add descriptive alt text to all images."
-        
-    results['details']['content']['image_alt'] = {
-        'status': status,
-        'score': score,
-        'description': f"Images: {img_with_alt_count}/{img_count} have alt text",
-        'recommendation': recommendation
-    }
-    content_score += score
-    content_items += 1
-    
-    # Internal links
-    internal_links = [a for a in soup.find_all('a', href=True) if not (a['href'].startswith('http') or a['href'].startswith('//')) and not a['href'].startswith('#')]
-    internal_link_count = len(internal_links)
-    
-    if internal_link_count >= 3:
-        status = 'good'
-        score = 100
-        recommendation = "Good number of internal links for user navigation and SEO."
-    elif internal_link_count > 0:
-        status = 'warning'
-        score = 70
-        recommendation = "Your page has few internal links. Add more to improve site structure and SEO."
-    else:
-        status = 'error'
-        score = 30
-        recommendation = "No internal links found. Add links to other relevant pages on your site."
-        
-    results['details']['content']['internal_links'] = {
-        'status': status,
-        'score': score,
-        'description': f"Internal links: {internal_link_count}",
-        'recommendation': recommendation
-    }
-    content_score += score
-    content_items += 1
-    
-    # Calculate average content score
     results['scores']['content'] = content_score // content_items if content_items > 0 else 0
 
 def analyze_technical(soup, url, results):
-    """Analyze technical aspects for SEO"""
-    technical_score = 0
-    technical_items = 0
+    technical_score = 0; technical_items = 0
     
-    # Mobile responsiveness check (simple viewport check)
     viewport = soup.find('meta', attrs={'name': 'viewport'})
-    if viewport and 'width=device-width' in viewport.get('content', ''):
-        status = 'good'
-        score = 100
-        recommendation = "Your page has a proper viewport meta tag for mobile responsiveness."
-    else:
-        status = 'error'
-        score = 20
-        recommendation = "No viewport meta tag found. Add one to ensure mobile-friendliness."
-        
-    results['details']['technical']['viewport'] = {
-        'status': status,
-        'score': score,
-        'description': "Viewport meta tag: " + ("Present" if viewport else "Missing"),
-        'recommendation': recommendation
-    }
-    technical_score += score
-    technical_items += 1
+    if viewport and 'width=device-width' in viewport.get('content', ''): status, score, recommendation = 'good', 100, "Viewport meta tag present."
+    else: status, score, recommendation = 'error', 20, "Missing viewport meta tag."
+    results['details']['technical']['viewport'] = {'status': status, 'score': score, 'description': "Viewport " + ("present" if viewport else "missing"), 'recommendation': recommendation}
+    technical_score += score; technical_items += 1
+
+    if url.startswith('https://'): status, score, recommendation = 'good', 100, "Site uses HTTPS."
+    else: status, score, recommendation = 'error', 0, "Site does not use HTTPS."
+    results['details']['technical']['https'] = {'status': status, 'score': score, 'description': "HTTPS " + ("enabled" if url.startswith('https') else "disabled"), 'recommendation': recommendation}
+    technical_score += score; technical_items += 1
+
+    canonical = soup.find('link', rel='canonical')
+    if canonical and canonical.get('href'): status, score, recommendation = 'good', 100, "Canonical URL tag present."
+    else: status, score, recommendation = 'warning', 60, "No canonical URL tag. Consider adding one."
+    results['details']['technical']['canonical'] = {'status': status, 'score': score, 'description': "Canonical URL " + (canonical.get('href') if canonical else "missing"), 'recommendation': recommendation}
+    technical_score += score; technical_items += 1
     
-    # HTTPS check
-    if url.startswith('https'):
-        status = 'good'
-        score = 100
-        recommendation = "Your site is secure with HTTPS."
-    else:
-        status = 'error'
-        score = 0
-        recommendation = "Your site is not using HTTPS. Switch to HTTPS for better security and SEO."
-        
-    results['details']['technical']['https'] = {
-        'status': status,
-        'score': score,
-        'description': "HTTPS: " + ("Yes" if url.startswith('https') else "No"),
-        'recommendation': recommendation
-    }
-    technical_score += score
-    technical_items += 1
+    # Placeholders pour des analyses plus poussées
+    results['details']['technical']['robots_txt'] = {'status': 'info', 'score': 50, 'description': "robots.txt check: Not implemented.", 'recommendation': "Ensure robots.txt is configured."}
+    technical_score += 50; technical_items += 1
+    results['details']['technical']['sitemap'] = {'status': 'info', 'score': 50, 'description': "Sitemap check: Not implemented.", 'recommendation': "Ensure a sitemap exists."}
+    technical_score += 50; technical_items += 1
     
-    # Canonical URL
-    canonical = soup.find('link', attrs={'rel': 'canonical'})
-    if canonical and canonical.get('href'):
-        status = 'good'
-        score = 100
-        recommendation = "Your page has a canonical URL tag."
-    else:
-        status = 'warning'
-        score = 60
-        recommendation = "No canonical URL tag found. Consider adding one to prevent duplicate content issues."
-        
-    results['details']['technical']['canonical'] = {
-        'status': status,
-        'score': score,
-        'description': "Canonical URL: " + (canonical.get('href', '') if canonical else "Missing"),
-        'recommendation': recommendation
-    }
-    technical_score += score
-    technical_items += 1
-    
-    # robots.txt and sitemap.xml checks could be added here for a more complete analysis
-    # For the MVP, we'll use placeholders
-    
-    results['details']['technical']['robots_txt'] = {
-        'status': 'info',
-        'score': 50,
-        'description': "robots.txt check: Not implemented in MVP",
-        'recommendation': "Ensure you have a robots.txt file that doesn't block important content."
-    }
-    technical_score += 50
-    technical_items += 1
-    
-    results['details']['technical']['sitemap'] = {
-        'status': 'info',
-        'score': 50,
-        'description': "sitemap.xml check: Not implemented in MVP",
-        'recommendation': "Ensure you have a sitemap.xml file submitted to search engines."
-    }
-    technical_score += 50
-    technical_items += 1
-    
-    # Page loading speed (placeholder - would need frontend timing data for accurate measurement)
-    results['details']['technical']['page_speed'] = {
-        'status': 'info',
-        'score': 50,
-        'description': "Page speed check: Not implemented in MVP",
-        'recommendation': "Ensure your page loads quickly for better user experience and SEO."
-    }
-    technical_score += 50
-    technical_items += 1
-    
-    # Calculate average technical score
     results['scores']['technical'] = technical_score // technical_items if technical_items > 0 else 0
