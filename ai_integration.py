@@ -3,21 +3,25 @@ import json
 import logging
 from openai import OpenAI
 
-# the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
-# do not change this unless explicitly requested by the user
+# Migration to DeepSeek AI - using deepseek-chat model
+# DeepSeek provides cost-effective AI with good performance
 
 logger = logging.getLogger(__name__)
 
-# Initialize OpenAI client
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+# Initialize DeepSeek client (compatible with OpenAI API)
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY")
 openai = None
 try:
-    if OPENAI_API_KEY:
-        openai = OpenAI(api_key=OPENAI_API_KEY)
+    if DEEPSEEK_API_KEY:
+        openai = OpenAI(
+            api_key=DEEPSEEK_API_KEY,
+            base_url="https://api.deepseek.com"
+        )
+        logger.info("DeepSeek client initialized successfully")
     else:
-        logger.warning("OPENAI_API_KEY not set. AI features will be disabled.")
+        logger.warning("DEEPSEEK_API_KEY not set. AI features will be disabled.")
 except Exception as e:
-    logger.error(f"Error initializing OpenAI client: {str(e)}")
+    logger.error(f"Error initializing DeepSeek client: {str(e)}")
 
 def get_seo_recommendations(url, analysis_type, analysis_details, lang_code='en'):
     """
@@ -32,31 +36,31 @@ def get_seo_recommendations(url, analysis_type, analysis_details, lang_code='en'
     Returns:
     - Dictionary with AI recommendations
     """
-    # Check if OpenAI client is available
+    # Check if DeepSeek client is available
     if not openai:
-        logger.warning("OpenAI client not initialized. Returning fallback recommendations.")
+        logger.warning("DeepSeek client not initialized. Returning fallback recommendations.")
         if lang_code == 'fr':
             return {
-                "summary": "Les recommandations propulsées par l'IA nécessitent une clé API OpenAI.",
+                "summary": "Les recommandations propulsées par l'IA nécessitent une clé API DeepSeek.",
                 "priorities": ["Corriger les erreurs techniques", "Améliorer les balises méta", "Améliorer le contenu"],
                 "recommendations": [
                     {
                         "title": "Clé API requise",
-                        "description": "Pour accéder aux recommandations propulsées par l'IA, veuillez fournir une clé API OpenAI valide dans les paramètres de votre compte.",
-                        "steps": ["Accédez aux paramètres de votre profil", "Ajoutez votre clé API OpenAI", "Actualisez cette page pour voir les recommandations IA"]
+                        "description": "Pour accéder aux recommandations propulsées par l'IA, veuillez fournir une clé API DeepSeek valide dans les paramètres de votre compte.",
+                        "steps": ["Accédez aux paramètres de votre profil", "Ajoutez votre clé API DeepSeek", "Actualisez cette page pour voir les recommandations IA"]
                     }
                 ],
                 "insights": "Le rapport d'analyse détaillé ci-dessus fournit des informations précieuses sur les performances SEO de votre site."
             }
         else:
             return {
-                "summary": "AI-powered recommendations require an OpenAI API key.",
+                "summary": "AI-powered recommendations require a DeepSeek API key.",
                 "priorities": ["Fix technical errors", "Improve meta tags", "Enhance content"],
                 "recommendations": [
                     {
                         "title": "API Key Required",
-                        "description": "To access AI-powered recommendations, please provide a valid OpenAI API key in your account settings.",
-                        "steps": ["Go to your profile settings", "Add your OpenAI API key", "Refresh this page to see AI recommendations"]
+                        "description": "To access AI-powered recommendations, please provide a valid DeepSeek API key in your account settings.",
+                        "steps": ["Go to your profile settings", "Add your DeepSeek API key", "Refresh this page to see AI recommendations"]
                     }
                 ],
                 "insights": "The detailed analysis report above provides valuable information about your site's SEO performance."
@@ -88,9 +92,9 @@ def get_seo_recommendations(url, analysis_type, analysis_details, lang_code='en'
         - insights: Additional expert insights
         """
         
-        # Call OpenAI API
+        # Call DeepSeek API
         response = openai.chat.completions.create(
-            model="gpt-4o",
+            model="deepseek-chat",
             messages=[
                 {"role": "system", "content": f"You are an expert SEO analyst providing clear, actionable advice {language_instruction}."},
                 {"role": "user", "content": prompt}
@@ -143,10 +147,10 @@ def get_chat_response(user_query, context=None):
     Returns:
     - String with AI response
     """
-    # Check if OpenAI client is available
+    # Check if DeepSeek client is available
     if not openai:
-        logger.warning("OpenAI client not initialized. Returning fallback chat response.")
-        return "I'm sorry, but I need an OpenAI API key to provide intelligent responses. Please add your API key in the settings to enable AI features."
+        logger.warning("DeepSeek client not initialized. Returning fallback chat response.")
+        return "I'm sorry, but I need a DeepSeek API key to provide intelligent responses. Please add your API key in the settings to enable AI features."
     
     try:
         # Prepare system message with context if available
@@ -154,9 +158,9 @@ def get_chat_response(user_query, context=None):
         if context:
             system_message += f"\n\nContext about the user's website: {context}"
         
-        # Call OpenAI API
+        # Call DeepSeek API
         response = openai.chat.completions.create(
-            model="gpt-4o",
+            model="deepseek-chat",
             messages=[
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": user_query}
@@ -181,15 +185,15 @@ def analyze_content_semantics(text, keywords=None):
     Returns:
     - Dictionary with semantic analysis results
     """
-    # Check if OpenAI client is available
+    # Check if DeepSeek client is available
     if not openai:
-        logger.warning("OpenAI client not initialized. Returning fallback semantic analysis.")
+        logger.warning("DeepSeek client not initialized. Returning fallback semantic analysis.")
         return {
             "relevance_score": 50,
-            "depth_assessment": "AI-powered semantic analysis requires an OpenAI API key.",
+            "depth_assessment": "AI-powered semantic analysis requires a DeepSeek API key.",
             "keyword_suggestions": ["seo", "content", "optimization"],
             "structure_recommendations": [
-                "Add your OpenAI API key to enable detailed semantic analysis",
+                "Add your DeepSeek API key to enable detailed semantic analysis",
                 "Ensure proper heading structure",
                 "Add more detailed content"
             ]
@@ -221,9 +225,9 @@ def analyze_content_semantics(text, keywords=None):
         - structure_recommendations: array of strings
         """
         
-        # Call OpenAI API
+        # Call DeepSeek API
         response = openai.chat.completions.create(
-            model="gpt-4o",
+            model="deepseek-chat",
             messages=[
                 {"role": "system", "content": "You are an expert in semantic SEO analysis."},
                 {"role": "user", "content": prompt}

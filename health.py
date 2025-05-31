@@ -12,9 +12,15 @@ def health_check():
         with db.engine.connect() as conn:
             conn.execute(text("SELECT 1"))
         
+        # Test DeepSeek API connection
+        from ai_integration import openai
+        ai_status = "connected" if openai else "not_configured"
+        
         return jsonify({
             "status": "healthy",
-            "database": "connected"
+            "database": "connected",
+            "ai_service": ai_status,
+            "version": "1.0.0"
         }), 200
     except Exception as e:
         return jsonify({

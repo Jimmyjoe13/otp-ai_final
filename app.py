@@ -9,8 +9,15 @@ from flask_jwt_extended import JWTManager
 from flask_login import LoginManager
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Validate environment variables before starting
+from env_validator import validate_environment
+if not validate_environment():
+    logger.error("Environment validation failed. Please check your Railway environment variables.")
+    # In production, we'll continue but log warnings
+    # In development, you might want to exit here
 
 class Base(DeclarativeBase):
     pass
