@@ -83,3 +83,15 @@ with app.app_context():
     def load_user(user_id):
         from models import User
         return User.query.get(int(user_id))
+
+    # Global error handlers
+    @app.errorhandler(500)
+    def handle_500(e):
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Internal server error: {str(e)}")
+        return jsonify({"error": "Internal server error"}), 500
+    
+    @app.errorhandler(404)
+    def handle_404(e):
+        return jsonify({"error": "Not found"}), 404
