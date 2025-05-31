@@ -11,9 +11,19 @@ from flask_login import LoginManager
 from datetime import timedelta # Import timedelta
 
 # Configure logging pour une sortie structurée vers stdout (compatible Railway)
-logging.basicConfig(stream=sys.stdout, level=logging.INFO,
+# Le niveau de log peut être contrôlé par la variable d'environnement LOG_LEVEL (ex: DEBUG, INFO, WARNING)
+LOG_LEVEL_STR = os.environ.get('LOG_LEVEL', 'INFO').upper()
+numeric_level = getattr(logging, LOG_LEVEL_STR, None)
+if not isinstance(numeric_level, int):
+    # Si LOG_LEVEL_STR n'est pas un nom de niveau valide, utiliser INFO par défaut
+    logging.warning(f"Invalid LOG_LEVEL '{LOG_LEVEL_STR}'. Defaulting to INFO.")
+    numeric_level = logging.INFO
+
+logging.basicConfig(stream=sys.stdout, level=numeric_level,
                     format='%(asctime)s %(levelname)s [%(name)s] [%(filename)s:%(lineno)d] - %(message)s')
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__) # Obtenir le logger après la configuration de basicConfig
+logger.info(f"Logging level set to {logging.getLevelName(logger.getEffectiveLevel())}")
+
 
 # Validate environment variables before starting
 from env_validator import validate_environment
