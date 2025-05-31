@@ -1,10 +1,14 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from datetime import datetime
-from models import Analysis # Assurez-vous que Analysis est importé
-from app import db # Assurez-vous que db est importé
+from models import Analysis, AnalysisDetail # AnalysisDetail ajouté
+from app import db
+# Importer le véritable analyseur SEO
+from seo_analyzer import analyze_url as perform_seo_analysis
+import logging # Importer logging
 
 main = Blueprint('main', __name__)
+logger = logging.getLogger(__name__) # Configurer un logger pour ce blueprint
 
 @main.route('/')
 def index():
@@ -20,8 +24,6 @@ def dashboard():
                              subscription_status=subscription_status,
                              now=datetime.now())
     except Exception as e:
-        import logging
-        logger = logging.getLogger(__name__)
         logger.error(f"Dashboard error: {str(e)}", exc_info=True)
         return render_template('error.html', 
                              error_message="Unable to load dashboard. Please try again later.",
@@ -58,23 +60,59 @@ def analyze():
                     flash('Monthly analysis limit reached. Please upgrade your plan.', 'warning')
                     return redirect(url_for('main.pricing'))
             
+            # Appeler le véritable analyseur SEO
+            try:
+                logger.info(f"Starting SEO analysis for {url} (type: {analysis_type}) by user {current_user.id}")
+                seo_results = perform_seo_analysis(url, analysis_type)
+                logger.info(f"SEO analysis completed for {url}. Overall score: {seo_results['scores'].get('overall')}")
+            except Exception as analysis_err:
+                logger.error(f"seo_analyzer.analyze_url failed for {url}: {str(analysis_err)}", exc_info=True)
+                flash(f"Error during SEO analysis for {url}. Details: {str(analysis_err)}", 'danger')
+                return redirect(url_for('main.analyze'))
+
             analysis = Analysis(
-                url=url, analysis_type=analysis_type, user_id=current_user.id,
-                meta_score=75, content_score=80, technical_score=85, overall_score=80 # Demo scores
+                url=url, 
+                analysis_type=analysis_type, 
+                user_id=current_user.id,
+                meta_score=seo_results['scores'].get('meta', 0),
+                content_score=seo_results['scores'].get('content', 0),
+                technical_score=seo_results['scores'].get('technical', 0),
+                overall_score=seo_results['scores'].get('overall', 0)
             )
             db.session.add(analysis)
+            db.session.flush() # Pour obtenir l'ID de l'analyse avant le commit complet
+
+            # Sauvegarder les AnalysisDetail
+            if 'details' in seo_results:
+                for category, items in seo_results['details'].items():
+                    if isinstance(items, dict): # S'assurer que items est un dictionnaire
+                        for component, item_details in items.items():
+                            if isinstance(item_details, dict): # S'assurer que item_details est un dictionnaire
+                                detail = AnalysisDetail(
+                                    analysis_id=analysis.id,
+                                    category=category,
+                                    component=component,
+                                    status=item_details.get('status', 'info'),
+                                    score=item_details.get('score', 0),
+                                    description=item_details.get('description', ''),
+                                    recommendation=item_details.get('recommendation', '')
+                                )
+                                db.session.add(detail)
+                            else:
+                                logger.warning(f"Skipping malformed item_details for component {component} in category {category}: {item_details}")
+                    else:
+                        logger.warning(f"Skipping malformed items for category {category}: {items}")
+            
             db.session.commit()
+            logger.info(f"Analysis and details for {url} (ID: {analysis.id}) saved to database.")
             
             flash(f'Analysis completed for {url}', 'success')
-            # CORRIGÉ : Rediriger vers la page de rapport avec l'ID de l'analyse
             return redirect(url_for('main.report', analysis_id=analysis.id))
             
         except Exception as e:
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"Analysis error: {str(e)}", exc_info=True)
+            logger.error(f"General error in /analyze POST: {str(e)}", exc_info=True)
             db.session.rollback()
-            flash('Analysis failed. Please try again.', 'danger')
+            flash('An unexpected error occurred during analysis. Please try again.', 'danger')
             return redirect(url_for('main.analyze'))
     
     return render_template('analyze.html', user=current_user, now=datetime.now())
@@ -84,8 +122,8 @@ def analyze():
 def profile():
     return render_template('profile.html', user=current_user, now=datetime.now())
 
-@main.route('/report') # Route par défaut pour la dernière analyse (optionnel)
-@main.route('/report/<int:analysis_id>') # Route pour une analyse spécifique
+@main.route('/report') 
+@main.route('/report/<int:analysis_id>') 
 @login_required
 def report(analysis_id=None):
     try:
@@ -100,17 +138,14 @@ def report(analysis_id=None):
                 flash('No analysis found. Please analyze a URL first.', 'warning')
                 return redirect(url_for('main.analyze'))
 
-        # Charger les détails de l'analyse (AnalysisDetail)
         analysis_details = analysis.details.all() if analysis else []
         
         return render_template('report.html', 
                              user=current_user,
                              analysis=analysis,
-                             details=analysis_details, # Passer les détails au template
+                             details=analysis_details, 
                              now=datetime.now())
     except Exception as e:
-        import logging
-        logger = logging.getLogger(__name__)
         logger.error(f"Report page error: {str(e)}", exc_info=True)
         return render_template('error.html', 
                              error_message="Unable to load report page.",
@@ -123,8 +158,6 @@ def not_found_error(error):
 
 @main.errorhandler(500)
 def internal_error(error):
-    import logging
-    logger = logging.getLogger(__name__)
     logger.error(f"Internal server error: {str(error)}", exc_info=True)
     return render_template('error.html', error_message="Internal server error. Please try again later.", now=datetime.now()), 500
 
