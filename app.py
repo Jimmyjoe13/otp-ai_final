@@ -1,15 +1,18 @@
 import os
 import logging
-from flask import Flask
+import sys # Ajouté pour le logging vers stdout
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_login import LoginManager
+from datetime import timedelta # Import timedelta
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Configure logging pour une sortie structurée vers stdout (compatible Railway)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO,
+                    format='%(asctime)s %(levelname)s [%(name)s] [%(filename)s:%(lineno)d] - %(message)s')
 logger = logging.getLogger(__name__)
 
 # Validate environment variables before starting
@@ -40,13 +43,24 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Configure JWT
 app.config["JWT_SECRET_KEY"] = os.environ.get("SESSION_SECRET")
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600  # 1 hour
-app.config["JWT_REFRESH_TOKEN_EXPIRES"] = 2592000  # 30 days
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
 
 # Initialize extensions with app
 db.init_app(app)
 jwt = JWTManager(app)
-CORS(app)
+
+# Configure CORS for specific origins
+allowed_origins = [
+    os.environ.get("DOMAIN", "https://opt-ai.up.railway.app"),
+    "http://localhost:5000", 
+    "http://127.0.0.1:5000" 
+]
+CORS(app, resources={
+    r"/api/*": {"origins": allowed_origins},
+    r"/payment/*": {"origins": allowed_origins},
+    r"/auth/*": {"origins": allowed_origins}
+}, supports_credentials=True)
 
 # Set up Flask-Login
 login_manager = LoginManager()
@@ -71,11 +85,12 @@ with app.app_context():
     from payment import payment_bp
     from health import health_bp
     from main_routes import main as main_bp
-    app.register_blueprint(api_bp)
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(chatbot_bp)
+    
+    app.register_blueprint(api_bp, url_prefix='/api')
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+    app.register_blueprint(chatbot_bp, url_prefix='/chatbot')
     app.register_blueprint(payment_bp, url_prefix='/payment')
-    app.register_blueprint(health_bp)
+    app.register_blueprint(health_bp) 
     app.register_blueprint(main_bp)
     
     # User loader for Flask-Login
@@ -87,11 +102,13 @@ with app.app_context():
     # Global error handlers
     @app.errorhandler(500)
     def handle_500(e):
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.error(f"Internal server error: {str(e)}")
-        return jsonify({"error": "Internal server error"}), 500
+        logger.error(f"Internal server error: {str(e)}", exc_info=True)
+        return jsonify({"error": "Internal server error", "message": str(e)}), 500
     
     @app.errorhandler(404)
     def handle_404(e):
-        return jsonify({"error": "Not found"}), 404
+        return jsonify({"error": "Not found", "message": "The requested URL was not found on the server."}), 404
+    
+    @app.errorhandler(405)
+    def handle_405(e):
+        return jsonify({"error": "Method not allowed", "message": "The method is not allowed for the requested URL."}), 405
