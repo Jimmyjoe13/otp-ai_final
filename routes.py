@@ -7,7 +7,7 @@ from app import db
 
 api_bp = Blueprint('api', __name__)
 
-@api_bp.route('/api/analyses')
+@api_bp.route('/analyses') # Corrigé: suppression de /api
 @login_required
 def get_analyses():
     """Get all analyses for current user"""
@@ -31,7 +31,7 @@ def get_analyses():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@api_bp.route('/api/analyses/<int:analysis_id>')
+@api_bp.route('/analyses/<int:analysis_id>') # Corrigé
 @login_required
 def get_analysis(analysis_id):
     """Get specific analysis details"""
@@ -40,7 +40,6 @@ def get_analysis(analysis_id):
         if not analysis:
             return jsonify({'error': 'Analysis not found'}), 404
         
-        # Get analysis details
         details = []
         for detail in analysis.details:
             details.append({
@@ -68,7 +67,7 @@ def get_analysis(analysis_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@api_bp.route('/api/profile/stats')
+@api_bp.route('/profile/stats') # Corrigé
 @login_required
 def profile_stats():
     """Get user profile statistics"""
@@ -83,31 +82,25 @@ def profile_stats():
         elif period == 'last_year':
             start_date = now - timedelta(days=365)
         else:
-            start_date = now - timedelta(days=30)  # default
+            start_date = now - timedelta(days=30)
 
-        # Query analyses for current user in the period
         analyses = Analysis.query.filter(
             Analysis.user_id == current_user.id,
             Analysis.created_at >= start_date
         ).all()
 
-        # Aggregate data by week
         data_by_week = defaultdict(lambda: {'analyses': 0, 'avg_score': 0, 'total_score': 0})
-
         for analysis in analyses:
             week_label = analysis.created_at.strftime('Week %U')
             data_by_week[week_label]['analyses'] += 1
             score = analysis.overall_score or 0
             data_by_week[week_label]['total_score'] += score
 
-        # Calculate averages
         for week_data in data_by_week.values():
             if week_data['analyses'] > 0:
                 week_data['avg_score'] = week_data['total_score'] / week_data['analyses']
 
-        # Sort weeks
         sorted_weeks = sorted(data_by_week.keys())
-
         labels = sorted_weeks
         analyses_counts = [data_by_week[week]['analyses'] for week in sorted_weeks]
         avg_scores = [data_by_week[week]['avg_score'] for week in sorted_weeks]
@@ -120,36 +113,22 @@ def profile_stats():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@api_bp.route('/api/dashboard/summary')
+@api_bp.route('/dashboard/summary') # Corrigé
 @login_required
 def dashboard_summary():
     """Get dashboard summary data"""
     try:
-        # Get total analyses count
         total_analyses = Analysis.query.filter_by(user_id=current_user.id).count()
-        
-        # Get average score
         analyses = Analysis.query.filter_by(user_id=current_user.id).all()
-        if analyses:
-            total_score = sum(a.overall_score or 0 for a in analyses)
-            avg_score = total_score / len(analyses) if analyses else 0
-        else:
-            avg_score = 0
+        avg_score = sum(a.overall_score or 0 for a in analyses) / len(analyses) if analyses else 0
         
-        # Get recent analyses (last 5)
         recent_analyses = Analysis.query.filter_by(user_id=current_user.id)\
                                        .order_by(Analysis.created_at.desc())\
                                        .limit(5).all()
-        
-        recent_data = []
-        for analysis in recent_analyses:
-            recent_data.append({
-                'id': analysis.id,
-                'url': analysis.url,
-                'analysis_type': analysis.analysis_type,
-                'created_at': analysis.created_at.isoformat(),
-                'overall_score': analysis.overall_score or 0
-            })
+        recent_data = [{
+            'id': analysis.id, 'url': analysis.url, 'analysis_type': analysis.analysis_type,
+            'created_at': analysis.created_at.isoformat(), 'overall_score': analysis.overall_score or 0
+        } for analysis in recent_analyses]
         
         return jsonify({
             'total_analyses': total_analyses,
@@ -160,7 +139,7 @@ def dashboard_summary():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@api_bp.route('/api/analyze', methods=['POST'])
+@api_bp.route('/analyze', methods=['POST']) # Corrigé
 @login_required
 def analyze_url():
     """Analyze a URL"""
@@ -172,41 +151,28 @@ def analyze_url():
         url = data['url']
         analysis_type = data.get('analysis_type', 'partial')
         
-        # Check subscription limits
         if current_user.subscription_status == 'free':
-            # Free users limited to 5 analyses per month
             month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
             monthly_count = Analysis.query.filter(
                 Analysis.user_id == current_user.id,
                 Analysis.created_at >= month_start
             ).count()
-            
             if monthly_count >= 5:
                 return jsonify({'error': 'Monthly analysis limit reached. Please upgrade your plan.'}), 403
         
-        # Create new analysis record
-        analysis = Analysis(
-            url=url,
-            analysis_type=analysis_type,
-            user_id=current_user.id
-        )
-        
+        analysis = Analysis(url=url, analysis_type=analysis_type, user_id=current_user.id)
         db.session.add(analysis)
         db.session.commit()
         
-        # Here you would call your SEO analysis function
-        # For now, return a placeholder
         return jsonify({
-            'id': analysis.id,
-            'status': 'created',
+            'id': analysis.id, 'status': 'created',
             'message': 'Analysis started. This feature will be implemented with the SEO analyzer.'
         })
-        
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-@api_bp.route('/api/user/profile')
+@api_bp.route('/user/profile') # Corrigé
 @login_required
 def user_profile():
     """Get current user profile"""
