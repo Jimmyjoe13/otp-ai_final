@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from datetime import datetime
-from models import Analysis
-from app import db
+from models import Analysis # Assurez-vous que Analysis est importé
+from app import db # Assurez-vous que db est importé
 
 main = Blueprint('main', __name__)
 
@@ -14,17 +14,15 @@ def index():
 @login_required
 def dashboard():
     try:
-        # Get user subscription info safely
         subscription_status = getattr(current_user, 'subscription_status', 'free')
         return render_template('dashboard.html', 
                              user=current_user,
                              subscription_status=subscription_status,
                              now=datetime.now())
     except Exception as e:
-        # Log the error and show a user-friendly message
         import logging
         logger = logging.getLogger(__name__)
-        logger.error(f"Dashboard error: {str(e)}")
+        logger.error(f"Dashboard error: {str(e)}", exc_info=True)
         return render_template('error.html', 
                              error_message="Unable to load dashboard. Please try again later.",
                              now=datetime.now()), 500
@@ -38,7 +36,6 @@ def pricing():
 def analyze():
     if request.method == 'POST':
         try:
-            # Get URL from form or JSON
             if request.is_json:
                 data = request.get_json()
                 url = data.get('url')
@@ -48,109 +45,73 @@ def analyze():
                 analysis_type = request.form.get('analysis_type', 'partial')
             
             if not url:
-                if request.is_json:
-                    return jsonify({'error': 'URL is required'}), 400
                 flash('URL is required', 'danger')
                 return redirect(url_for('main.analyze'))
             
-            # Check subscription limits
             if current_user.subscription_status == 'free':
                 month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
                 monthly_count = Analysis.query.filter(
                     Analysis.user_id == current_user.id,
                     Analysis.created_at >= month_start
                 ).count()
-                
                 if monthly_count >= 5:
-                    if request.is_json:
-                        return jsonify({'error': 'Monthly analysis limit reached. Please upgrade your plan.'}), 403
                     flash('Monthly analysis limit reached. Please upgrade your plan.', 'warning')
                     return redirect(url_for('main.pricing'))
             
-            # Create new analysis
             analysis = Analysis(
-                url=url,
-                analysis_type=analysis_type,
-                user_id=current_user.id,
-                meta_score=75,  # Demo scores
-                content_score=80,
-                technical_score=85,
-                overall_score=80
+                url=url, analysis_type=analysis_type, user_id=current_user.id,
+                meta_score=75, content_score=80, technical_score=85, overall_score=80 # Demo scores
             )
-            
             db.session.add(analysis)
             db.session.commit()
             
-            if request.is_json:
-                return jsonify({
-                    'id': analysis.id,
-                    'status': 'completed',
-                    'url': url,
-                    'redirect': url_for('main.report', analysis_id=analysis.id)
-                })
-            
-            # Redirect to report page for form submissions
             flash(f'Analysis completed for {url}', 'success')
-            return redirect(url_for('main.report'))
+            # CORRIGÉ : Rediriger vers la page de rapport avec l'ID de l'analyse
+            return redirect(url_for('main.report', analysis_id=analysis.id))
             
         except Exception as e:
             import logging
             logger = logging.getLogger(__name__)
-            logger.error(f"Analysis error: {str(e)}")
+            logger.error(f"Analysis error: {str(e)}", exc_info=True)
             db.session.rollback()
-            
-            if request.is_json:
-                return jsonify({'error': 'Analysis failed. Please try again.'}), 500
             flash('Analysis failed. Please try again.', 'danger')
             return redirect(url_for('main.analyze'))
     
-    # GET request - show the form
-    try:
-        return render_template('analyze.html', 
-                             user=current_user,
-                             now=datetime.now())
-    except Exception as e:
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.error(f"Analyze page error: {str(e)}")
-        return render_template('error.html', 
-                             error_message="Unable to load analysis page.",
-                             now=datetime.now()), 500
+    return render_template('analyze.html', user=current_user, now=datetime.now())
 
 @main.route('/profile')
 @login_required
 def profile():
-    try:
-        return render_template('profile.html', 
-                             user=current_user,
-                             now=datetime.now())
-    except Exception as e:
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.error(f"Profile page error: {str(e)}")
-        return render_template('error.html', 
-                             error_message="Unable to load profile page.",
-                             now=datetime.now()), 500
+    return render_template('profile.html', user=current_user, now=datetime.now())
 
-@main.route('/report')
+@main.route('/report') # Route par défaut pour la dernière analyse (optionnel)
+@main.route('/report/<int:analysis_id>') # Route pour une analyse spécifique
 @login_required
-def report():
+def report(analysis_id=None):
     try:
-        # Get the most recent analysis
-        analysis = Analysis.query.filter_by(user_id=current_user.id).order_by(Analysis.created_at.desc()).first()
+        if analysis_id:
+            analysis = Analysis.query.filter_by(id=analysis_id, user_id=current_user.id).first()
+            if not analysis:
+                flash('Analysis not found or you do not have permission to view it.', 'danger')
+                return redirect(url_for('main.dashboard'))
+        else:
+            analysis = Analysis.query.filter_by(user_id=current_user.id).order_by(Analysis.created_at.desc()).first()
+            if not analysis:
+                flash('No analysis found. Please analyze a URL first.', 'warning')
+                return redirect(url_for('main.analyze'))
+
+        # Charger les détails de l'analyse (AnalysisDetail)
+        analysis_details = analysis.details.all() if analysis else []
         
-        if not analysis:
-            flash('No analysis found. Please analyze a URL first.', 'warning')
-            return redirect(url_for('main.analyze'))
-            
         return render_template('report.html', 
                              user=current_user,
                              analysis=analysis,
+                             details=analysis_details, # Passer les détails au template
                              now=datetime.now())
     except Exception as e:
         import logging
         logger = logging.getLogger(__name__)
-        logger.error(f"Report page error: {str(e)}")
+        logger.error(f"Report page error: {str(e)}", exc_info=True)
         return render_template('error.html', 
                              error_message="Unable to load report page.",
                              now=datetime.now()), 500
@@ -158,20 +119,15 @@ def report():
 # Error handlers
 @main.errorhandler(404)
 def not_found_error(error):
-    return render_template('error.html', 
-                         error_message="Page not found.",
-                         now=datetime.now()), 404
+    return render_template('error.html', error_message="Page not found.", now=datetime.now()), 404
 
 @main.errorhandler(500)
 def internal_error(error):
     import logging
     logger = logging.getLogger(__name__)
-    logger.error(f"Internal server error: {str(error)}")
-    return render_template('error.html', 
-                         error_message="Internal server error. Please try again later.",
-                         now=datetime.now()), 500
+    logger.error(f"Internal server error: {str(error)}", exc_info=True)
+    return render_template('error.html', error_message="Internal server error. Please try again later.", now=datetime.now()), 500
 
 @main.route('/favicon.ico')
 def favicon():
-    # Return empty response to avoid 404
     return '', 204
