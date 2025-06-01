@@ -78,7 +78,8 @@ def chatbot_route():
         logger.debug(f"Chatbot: Payload for webhook: {payload}")
 
         try:
-            webhook_response = requests.post(OPTY_BOT_WEBHOOK_URL, json=payload, headers=headers, timeout=20) # Timeout de 20s
+            # CORRIGÉ : Timeout augmenté à 45 secondes
+            webhook_response = requests.post(OPTY_BOT_WEBHOOK_URL, json=payload, headers=headers, timeout=45) 
             webhook_response.raise_for_status() # Lève une exception pour les codes d'erreur HTTP (4xx ou 5xx)
             
             response_data = webhook_response.json()
@@ -86,8 +87,8 @@ def chatbot_route():
             logger.info(f"Chatbot: Received response from webhook for user {current_user.id}")
             
         except requests.exceptions.Timeout:
-            logger.error(f"Chatbot: Timeout calling Opty-bot webhook at {OPTY_BOT_WEBHOOK_URL}")
-            final_response = "Désolé, le service Opty-bot met trop de temps à répondre."
+            logger.error(f"Chatbot: Timeout calling Opty-bot webhook at {OPTY_BOT_WEBHOOK_URL} after 45 seconds.")
+            final_response = "Désolé, le service Opty-bot met trop de temps à répondre (délai de 45s dépassé)."
         except requests.exceptions.HTTPError as e:
             logger.error(f"Chatbot: HTTPError {e.response.status_code} calling Opty-bot webhook. Response: {e.response.text}")
             final_response = f"Désolé, une erreur de communication ({e.response.status_code}) avec le service Opty-bot s'est produite."
