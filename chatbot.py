@@ -83,7 +83,8 @@ def chatbot_route():
             webhook_response.raise_for_status() # Lève une exception pour les codes d'erreur HTTP (4xx ou 5xx)
             
             response_data = webhook_response.json()
-            final_response = response_data.get("response", "Désolé, je n'ai pas pu obtenir de réponse claire du service externe.")
+            # CORRIGÉ : Lire la réponse depuis la clé "output"
+            final_response = response_data.get("output", "Désolé, je n'ai pas pu obtenir de réponse claire du service externe (clé 'output' attendue).")
             logger.info(f"Chatbot: Received response from webhook for user {current_user.id}")
             
         except requests.exceptions.Timeout:
