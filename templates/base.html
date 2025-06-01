@@ -29,25 +29,25 @@
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="/">Opt<span class="highlight">-AI</span></a>
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">Opt<span class="highlight">-AI</span></a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/">{{ _('navigation.home') }}</a>
+                        <a class="nav-link" href="{{ url_for('main.index') }}">{{ _('navigation.home') }}</a>
                     </li>
                     {% if current_user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="/dashboard">{{ _('navigation.dashboard') }}</a>
+                        <a class="nav-link" href="{{ url_for('main.dashboard') }}">{{ _('navigation.dashboard') }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/analyze">{{ _('navigation.analyze') }}</a>
+                        <a class="nav-link" href="{{ url_for('main.analyze') }}">{{ _('navigation.analyze') }}</a>
                     </li>
                     {% endif %}
                     <li class="nav-item">
-                        <a class="nav-link" href="/pricing">{{ _('navigation.pricing') }}</a>
+                        <a class="nav-link" href="{{ url_for('main.pricing') }}">{{ _('navigation.pricing') }}</a>
                     </li>
                 </ul>
                 <ul class="navbar-nav">
@@ -59,7 +59,7 @@
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
                             {% for lang in g.languages %}
                             <li>
-                                <a class="dropdown-item {% if g.locale == lang.code %}active{% endif %}" href="/set-language/{{ lang.code }}">
+                                <a class="dropdown-item {% if g.locale == lang.code %}active{% endif %}" href="{{ url_for('set_language', lang_code=lang.code) }}">
                                     {{ lang.name }}
                                 </a>
                             </li>
@@ -73,17 +73,17 @@
                             <i class="fas fa-user-circle me-1"></i> {{ current_user.username }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="/profile">{{ _('navigation.profile') }}</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.profile') }}">{{ _('navigation.profile') }}</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/logout">{{ _('navigation.logout') }}</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">{{ _('navigation.logout') }}</a></li>
                         </ul>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="/login">{{ _('navigation.login') }}</a>
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">{{ _('navigation.login') }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/register">{{ _('navigation.register') }}</a>
+                        <a class="nav-link" href="{{ url_for('auth.register') }}">{{ _('navigation.register') }}</a>
                     </li>
                     {% endif %}
                 </ul>
@@ -121,12 +121,12 @@
                 <div class="col-md-4">
                     <h5>{{ _('navigation.home') }}</h5>
                     <ul class="list-unstyled">
-                        <li><a href="/" class="text-decoration-none text-muted">{{ _('navigation.home') }}</a></li>
-                        <li><a href="/pricing" class="text-decoration-none text-muted">{{ _('navigation.pricing') }}</a></li>
+                        <li><a href="{{ url_for('main.index') }}" class="text-decoration-none text-muted">{{ _('navigation.home') }}</a></li>
+                        <li><a href="{{ url_for('main.pricing') }}" class="text-decoration-none text-muted">{{ _('navigation.pricing') }}</a></li>
                         {% if current_user.is_authenticated %}
-                        <li><a href="/dashboard" class="text-decoration-none text-muted">{{ _('navigation.dashboard') }}</a></li>
+                        <li><a href="{{ url_for('main.dashboard') }}" class="text-decoration-none text-muted">{{ _('navigation.dashboard') }}</a></li>
                         {% else %}
-                        <li><a href="/register" class="text-decoration-none text-muted">{{ _('navigation.register') }}</a></li>
+                        <li><a href="{{ url_for('auth.register') }}" class="text-decoration-none text-muted">{{ _('navigation.register') }}</a></li>
                         {% endif %}
                     </ul>
                 </div>
