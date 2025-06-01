@@ -68,11 +68,31 @@ def ai_recommendations_route(analysis_id):
             current_app.logger.warning(f"Analysis ID {analysis_id} not found for user {current_user.id}")
             return jsonify({'error': 'Analysis not found or not authorized'}), 404
 
-        # Vérifier si l'utilisateur a le droit aux recommandations IA (premium/enterprise et analyse complete/deep)
-        # Cette logique est déjà dans le template, mais une vérification backend est plus sûre.
-        if not (current_user.subscription_status in ['premium', 'enterprise'] and analysis.analysis_type in ['complete', 'deep']):
-            current_app.logger.info(f"User {current_user.id} (plan: {current_user.subscription_status}) not eligible for AI recommendations for analysis type {analysis.analysis_type}.")
-            return jsonify({'error': 'AI recommendations not available for this plan or analysis type.'}), 403
+        # Vérifier si l'utilisateur a le droit aux recommandations IA.
+        # Le décorateur @requires_subscription gère déjà l'accès au plan ['premium', 'enterprise'] avec un statut actif.
+        # Il reste donc à vérifier ici principalement le type d'analyse.
+        # Et par sécurité, on peut revérifier le plan/statut au cas où un admin sans le bon plan passerait le décorateur.
+        
+        user_sub = getattr(current_user, 'subscription', None)
+        is_eligible_plan = False
+        if user_sub and user_sub.status == 'active' and user_sub.plan in ['premium', 'enterprise']:
+            is_eligible_plan = True
+        
+        # Si l'utilisateur est admin, il outrepasse la vérification de plan du décorateur,
+        # mais nous voulons quand même nous assurer que la fonctionnalité est utilisée dans un contexte de plan attendu si possible,
+        # ou au moins que le type d'analyse est correct.
+        # Pour un admin, on peut être plus souple sur le plan exact s'il teste, mais le type d'analyse reste pertinent.
+
+        if not ( (hasattr(current_user, 'is_admin') and current_user.is_admin) or is_eligible_plan ):
+            # Ce cas ne devrait pas être atteint si le décorateur fonctionne pour les non-admins,
+            # sauf si l'admin n'a pas de plan premium/enterprise.
+            # Le message du décorateur est plus précis pour les non-admins.
+            current_app.logger.warning(f"User {current_user.id} (plan: {user_sub.plan if user_sub else 'None'}, status: {user_sub.status if user_sub else 'None'}) reached AI recommendations without eligible plan (should be caught by decorator).")
+            return jsonify({'error': 'Access to AI recommendations requires an active Premium or Enterprise plan.'}), 403
+
+        if not analysis.analysis_type in ['complete', 'deep']:
+            current_app.logger.info(f"User {current_user.id} (plan: {user_sub.plan if user_sub else 'N/A'}) not eligible for AI recommendations because analysis type is '{analysis.analysis_type}'. Requires 'complete' or 'deep'.")
+            return jsonify({'error': f"AI recommendations are only available for 'complete' or 'deep' analysis types. This analysis is type '{analysis.analysis_type}'."}), 403
 
         # Récupérer les AnalysisDetail et les formater pour la fonction get_seo_recommendations
         # La fonction get_seo_recommendations attend un dictionnaire de détails.
