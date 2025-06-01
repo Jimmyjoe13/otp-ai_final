@@ -21,38 +21,42 @@ def requires_subscription(plans):
                 return f(*args, **kwargs)
             
             # Get the user's subscription object
-            # The 'subscription' attribute is a backref from the Subscription model to User
-            user_subscription = getattr(current_user, 'subscription', None)
+            user_sub = getattr(current_user, 'subscription', None)
+            required_plans_str = ", ".join(plans)
 
-            if not user_subscription:
-                # Handles cases where a user might exist without a corresponding Subscription row,
-                # or if the subscription relationship isn't loaded.
-                # This also implicitly covers 'free' users if 'free' isn't a plan in 'plans' list
-                # and no Subscription record means they are effectively free.
-                if 'free' in plans: # If 'free' is explicitly allowed for a feature
-                    pass # Allow access if 'free' is a valid plan for the decorated route
-                else:
-                    flash('An active subscription is required to access this feature.', 'warning')
-                    return redirect(url_for('main.pricing'))
-            
-            # Check if the subscription is active and the plan is one of the allowed plans
-            if user_subscription and user_subscription.status == 'active':
-                if user_subscription.plan in plans:
-                    return f(*args, **kwargs) # Access granted
+            # CASE 1: User has an active subscription
+            if user_sub and user_sub.status == 'active':
+                if user_sub.plan in plans:
+                    return f(*args, **kwargs)  # Access granted: Active and correct plan
                 else:
                     # Active subscription, but not the right plan
-                    flash(f'This feature requires a "{", ".join(plans)}" subscription. Your current plan is "{user_subscription.plan}".', 'warning')
+                    flash(f'This feature requires a "{required_plans_str}" subscription. Your current plan is "{user_sub.plan}" (active).', 'warning')
                     return redirect(url_for('main.pricing'))
-            else:
-                # Subscription exists but is not active (e.g., 'past_due', 'canceled')
-                # Or it's a 'free' user case not covered by 'free' in plans.
-                if 'free' in plans and (not user_subscription or user_subscription.plan == 'free'):
-                     # If 'free' is allowed and user is effectively free (no subscription or free plan)
-                    return f(*args, **kwargs)
 
-                status_message = f"Your subscription status is \"{user_subscription.status if user_subscription else 'not active'}\"."
-                flash(f'Access denied. {status_message} This feature requires a "{", ".join(plans)}" subscription.', 'warning')
-                return redirect(url_for('main.pricing'))
+            # CASE 2: Feature allows 'free' plan, and user is effectively 'free'
+            # A user is considered 'free' for this check if they have no subscription record,
+            # or if their subscription record explicitly states plan 'free' (regardless of its status, though typically it wouldn't be 'active' here).
+            if 'free' in plans:
+                if not user_sub: # No subscription record at all, implies free
+                    return f(*args, **kwargs) 
+                # If there's a subscription record, but it's for the 'free' plan (e.g. an explicit 'free' tier in Subscription table)
+                # and it's not active (covered by CASE 1 if it was active 'free'), we still grant access if 'free' is allowed.
+                # This handles if 'free' users have a row in Subscription table with plan='free', status='active' or other.
+                # If their plan is 'free' and status is 'active', CASE 1 with 'free' in plans would grant access.
+                # If their plan is 'free' and status is not 'active', this grants access if 'free' is in plans.
+                if user_sub and user_sub.plan == 'free': # User has a 'free' plan record
+                     return f(*args, **kwargs)
+
+
+            # CASE 3: Access denied (no active qualifying subscription, and 'free' not applicable or not sufficient)
+            if user_sub:
+                # User has a subscription record, but it's not active or not the correct plan (and 'free' access didn't apply)
+                flash(f'Access denied. This feature requires a "{required_plans_str}" subscription. Your current plan is "{user_sub.plan}" with status "{user_sub.status}".', 'warning')
+            else:
+                # No subscription record at all, and 'free' was not an allowed plan for this feature
+                flash(f'Access denied. This feature requires a "{required_plans_str}" subscription. No active subscription found.', 'warning')
+            
+            return redirect(url_for('main.pricing'))
                 
         return wrapped
     return decorator
