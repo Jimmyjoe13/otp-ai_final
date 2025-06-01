@@ -152,8 +152,8 @@
         </div>
     </footer>
 
-    <!-- Chatbot Widget (visible only when logged in) -->
-    {% if current_user.is_authenticated %}
+    <!-- Chatbot Widget (visible only for authenticated premium/enterprise users or admins) -->
+    {% if current_user.is_authenticated and (current_user.is_admin or (current_user.subscription and current_user.subscription.status == 'active' and current_user.subscription.plan in ['premium', 'enterprise'])) %}
     <div class="chat-widget">
         <div id="chat-container" class="chat-container chat-hidden">
             <div class="chat-header">
@@ -180,7 +180,7 @@
     <script src="/static/js/main.js"></script>
     
     <!-- Chatbot JavaScript -->
-    {% if current_user.is_authenticated %}
+    {% if current_user.is_authenticated and (current_user.is_admin or (current_user.subscription and current_user.subscription.status == 'active' and current_user.subscription.plan in ['premium', 'enterprise'])) %}
     <script src="/static/js/chatbot.js"></script>
     {% endif %}
     
