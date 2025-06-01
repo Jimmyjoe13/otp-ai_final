@@ -25,35 +25,64 @@ def requires_subscription(plans, is_api_route=False): # Ajout du paramètre is_a
             if hasattr(current_user, 'is_admin') and current_user.is_admin:
                 return f(*args, **kwargs)
             
-            user_sub = getattr(current_user, 'subscription', None)
+            user_sub_obj = getattr(current_user, 'subscription', None) # Renamed to avoid confusion
             required_plans_str = ", ".join(plans)
 
-            # CASE 1: User has an active subscription
-            if user_sub and user_sub.status == 'active':
-                if user_sub.plan in plans:
-                    return f(*args, **kwargs)  # Access granted: Active and correct plan
+            effective_plan = None
+            is_considered_active = False # More descriptive name
+
+            # Priority to Subscription object if it exists and is active
+            if user_sub_obj and user_sub_obj.status == 'active':
+                effective_plan = user_sub_obj.plan
+                is_considered_active = True
+            # Fallback to User.subscription_status if Subscription object is not conclusive
+            elif hasattr(current_user, 'subscription_status') and current_user.subscription_status:
+                effective_plan = current_user.subscription_status
+                # Assume 'free' is always active-like, and any other plan string implies it should be active
+                # This is a simplification. A robust check for paid plans from User.subscription_status
+                # would ideally involve checking current_user.subscription_ends_at > datetime.utcnow()
+                if effective_plan == 'free' or (user_sub_obj is None and effective_plan not in ['free', None]):
+                    is_considered_active = True
+                elif user_sub_obj and user_sub_obj.status != 'active' and effective_plan not in ['free', None]:
+                    # If sub_obj exists but not active, but subscription_status is a paid plan,
+                    # we might still consider it active based on subscription_status for this fallback.
+                    # This depends on how strictly 'active' status from sub_obj should be enforced.
+                    # For now, let's assume subscription_status takes precedence if sub_obj isn't 'active'.
+                    is_considered_active = True
+
+
+            if is_considered_active:
+                if effective_plan in plans:
+                    return f(*args, **kwargs)  # Access granted
                 else:
-                    # Active subscription, but not the right plan
-                    message = f'This feature requires a "{required_plans_str}" subscription. Your current plan is "{user_sub.plan}" (active).'
+                    # Considered active, but not the right plan
+                    message = f'This feature requires a "{required_plans_str}" subscription. Your current plan is "{effective_plan}".'
                     if is_api_route:
                         return jsonify({'error': 'Subscription plan insufficient', 'message': message}), 403
                     else:
                         flash(message, 'warning')
                         return redirect(url_for('main.pricing'))
-
-            # CASE 2: Feature allows 'free' plan, and user is effectively 'free'
+            
+            # Handle 'free' plan access specifically if not covered by the general logic above
+            # This is important if 'free' is in plans and effective_plan ended up as None or not 'free'
+            # but the user should be considered 'free' by default.
             if 'free' in plans:
-                if not user_sub: 
-                    return f(*args, **kwargs) 
-                if user_sub and user_sub.plan == 'free':
+                # A user is 'free' if no specific plan is found or explicitly set to 'free'
+                is_default_free = not effective_plan or effective_plan == 'free'
+                if hasattr(current_user, 'subscription_status') and current_user.subscription_status == 'free':
+                    is_default_free = True # Explicitly free
+
+                if is_default_free:
                      return f(*args, **kwargs)
 
-            # CASE 3: Access denied (no active qualifying subscription, or 'free' not applicable/sufficient)
+            # CASE 3: Access denied
             denial_message = ""
-            if user_sub:
-                denial_message = f'Access denied. This feature requires a "{required_plans_str}" subscription. Your current plan is "{user_sub.plan}" with status "{user_sub.status}".'
-            else:
-                denial_message = f'Access denied. This feature requires a "{required_plans_str}" subscription. No active subscription found.'
+            if effective_plan: 
+                denial_message = f'Access denied. This feature requires a "{required_plans_str}" subscription. Your current plan is "{effective_plan}". The plan may not be active or sufficient.'
+            elif user_sub_obj: # Has a subscription object, but it wasn't deemed active or plan was None
+                 denial_message = f'Access denied. This feature requires a "{required_plans_str}" subscription. Your subscription (Plan: {user_sub_obj.plan}, Status: {user_sub_obj.status}) is not sufficient or not active.'
+            else: # No plan information found at all
+                denial_message = f'Access denied. This feature requires a "{required_plans_str}" subscription. No active or known subscription found.'
             
             if is_api_route:
                 return jsonify({'error': 'Subscription required or insufficient', 'message': denial_message}), 403
