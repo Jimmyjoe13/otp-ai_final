@@ -1,26 +1,30 @@
 import functools
-from flask import flash, redirect, url_for
+from flask import flash, redirect, url_for, jsonify, request # Ajout de jsonify et request
 from flask_login import current_user
 
-def requires_subscription(plans):
+def requires_subscription(plans, is_api_route=False): # Ajout du paramètre is_api_route
     """
-    Decorator to check if user has required subscription level
+    Decorator to check if user has required subscription level.
     
     Parameters:
-    - plans: List of allowed subscription plans
+    - plans: List of allowed subscription plans.
+    - is_api_route: Boolean, if True, returns JSON error on failure, else flashes and redirects.
     """
     def decorator(f):
         @functools.wraps(f)
         def wrapped(*args, **kwargs):
+            # Authentication check (applies to both API and web routes)
             if not current_user.is_authenticated:
-                flash('Please log in to access this feature', 'warning')
-                return redirect(url_for('auth.login'))
+                if is_api_route:
+                    return jsonify({'error': 'Authentication required', 'message': 'Please log in to access this feature.'}), 401
+                else:
+                    flash('Please log in to access this feature.', 'warning')
+                    return redirect(url_for('auth.login'))
                 
-            # Administrateurs ont accès à toutes les fonctionnalités
+            # Admin access (applies to both)
             if hasattr(current_user, 'is_admin') and current_user.is_admin:
                 return f(*args, **kwargs)
             
-            # Get the user's subscription object
             user_sub = getattr(current_user, 'subscription', None)
             required_plans_str = ", ".join(plans)
 
@@ -30,33 +34,32 @@ def requires_subscription(plans):
                     return f(*args, **kwargs)  # Access granted: Active and correct plan
                 else:
                     # Active subscription, but not the right plan
-                    flash(f'This feature requires a "{required_plans_str}" subscription. Your current plan is "{user_sub.plan}" (active).', 'warning')
-                    return redirect(url_for('main.pricing'))
+                    message = f'This feature requires a "{required_plans_str}" subscription. Your current plan is "{user_sub.plan}" (active).'
+                    if is_api_route:
+                        return jsonify({'error': 'Subscription plan insufficient', 'message': message}), 403
+                    else:
+                        flash(message, 'warning')
+                        return redirect(url_for('main.pricing'))
 
             # CASE 2: Feature allows 'free' plan, and user is effectively 'free'
-            # A user is considered 'free' for this check if they have no subscription record,
-            # or if their subscription record explicitly states plan 'free' (regardless of its status, though typically it wouldn't be 'active' here).
             if 'free' in plans:
-                if not user_sub: # No subscription record at all, implies free
+                if not user_sub: 
                     return f(*args, **kwargs) 
-                # If there's a subscription record, but it's for the 'free' plan (e.g. an explicit 'free' tier in Subscription table)
-                # and it's not active (covered by CASE 1 if it was active 'free'), we still grant access if 'free' is allowed.
-                # This handles if 'free' users have a row in Subscription table with plan='free', status='active' or other.
-                # If their plan is 'free' and status is 'active', CASE 1 with 'free' in plans would grant access.
-                # If their plan is 'free' and status is not 'active', this grants access if 'free' is in plans.
-                if user_sub and user_sub.plan == 'free': # User has a 'free' plan record
+                if user_sub and user_sub.plan == 'free':
                      return f(*args, **kwargs)
 
-
-            # CASE 3: Access denied (no active qualifying subscription, and 'free' not applicable or not sufficient)
+            # CASE 3: Access denied (no active qualifying subscription, or 'free' not applicable/sufficient)
+            denial_message = ""
             if user_sub:
-                # User has a subscription record, but it's not active or not the correct plan (and 'free' access didn't apply)
-                flash(f'Access denied. This feature requires a "{required_plans_str}" subscription. Your current plan is "{user_sub.plan}" with status "{user_sub.status}".', 'warning')
+                denial_message = f'Access denied. This feature requires a "{required_plans_str}" subscription. Your current plan is "{user_sub.plan}" with status "{user_sub.status}".'
             else:
-                # No subscription record at all, and 'free' was not an allowed plan for this feature
-                flash(f'Access denied. This feature requires a "{required_plans_str}" subscription. No active subscription found.', 'warning')
+                denial_message = f'Access denied. This feature requires a "{required_plans_str}" subscription. No active subscription found.'
             
-            return redirect(url_for('main.pricing'))
+            if is_api_route:
+                return jsonify({'error': 'Subscription required or insufficient', 'message': denial_message}), 403
+            else:
+                flash(denial_message, 'warning')
+                return redirect(url_for('main.pricing'))
                 
         return wrapped
     return decorator

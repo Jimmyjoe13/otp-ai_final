@@ -23,7 +23,7 @@ OPTY_BOT_WEBHOOK_AUTH_TOKEN = os.environ.get("OPTY_BOT_WEBHOOK_AUTH_TOKEN", None
 
 @chatbot_bp.route('/chatbot', methods=['POST']) 
 @login_required
-@requires_subscription(['premium', 'enterprise']) # Restriction d'accès
+@requires_subscription(['premium', 'enterprise'], is_api_route=True) # Restriction d'accès pour API
 def chatbot_route():
     """
     Chat API endpoint that forwards requests to an external Opty-bot webhook.
