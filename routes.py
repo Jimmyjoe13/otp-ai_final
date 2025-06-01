@@ -12,7 +12,7 @@ api_bp = Blueprint('api', __name__)
 
 @api_bp.route('/analyses') 
 @login_required
-@requires_subscription(['enterprise'], is_api_route=True)
+# Removed @requires_subscription(['enterprise'], is_api_route=True) - All authenticated users can list their own analyses
 def get_analyses():
     """Get all analyses for current user"""
     try:
@@ -30,7 +30,7 @@ def get_analyses():
 
 @api_bp.route('/analyses/<int:analysis_id>') 
 @login_required
-@requires_subscription(['enterprise'], is_api_route=True)
+# Removed @requires_subscription(['enterprise'], is_api_route=True) - All authenticated users can view their own analysis details
 def get_analysis_details_route(analysis_id): # Renommé pour éviter conflit avec une potentielle variable 'analysis'
     """Get specific analysis details"""
     try:
