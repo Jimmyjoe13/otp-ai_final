@@ -57,7 +57,7 @@ def get_analysis_details_route(analysis_id): # Renommé pour éviter conflit ave
 # NOUVELLE ROUTE POUR LES RECOMMANDATIONS IA
 @api_bp.route('/ai-recommendations/<int:analysis_id>')
 @login_required
-@requires_subscription(['enterprise'], is_api_route=True) # Cohérent avec API Access pour Enterprise
+@requires_subscription(['premium', 'enterprise'], is_api_route=True) # Accessible pour Premium et Enterprise
 def ai_recommendations_route(analysis_id):
     """Get AI-powered SEO recommendations for a specific analysis."""
     try:
