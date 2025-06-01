@@ -165,7 +165,7 @@ def profile_stats():
 
 @api_bp.route('/dashboard/summary') 
 @login_required
-@requires_subscription(['enterprise'], is_api_route=True)
+# Removed @requires_subscription(['enterprise'], is_api_route=True) - All authenticated users can get their dashboard summary
 def dashboard_summary():
     # ... (code existant inchangé)
     try:
