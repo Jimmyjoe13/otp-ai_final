@@ -19,12 +19,41 @@ def requires_subscription(plans):
             # Administrateurs ont accès à toutes les fonctionnalités
             if hasattr(current_user, 'is_admin') and current_user.is_admin:
                 return f(*args, **kwargs)
-                
-            if current_user.subscription_status not in plans:
-                flash(f'This feature requires a {" or ".join(plans)} subscription', 'warning')
+            
+            # Get the user's subscription object
+            # The 'subscription' attribute is a backref from the Subscription model to User
+            user_subscription = getattr(current_user, 'subscription', None)
+
+            if not user_subscription:
+                # Handles cases where a user might exist without a corresponding Subscription row,
+                # or if the subscription relationship isn't loaded.
+                # This also implicitly covers 'free' users if 'free' isn't a plan in 'plans' list
+                # and no Subscription record means they are effectively free.
+                if 'free' in plans: # If 'free' is explicitly allowed for a feature
+                    pass # Allow access if 'free' is a valid plan for the decorated route
+                else:
+                    flash('An active subscription is required to access this feature.', 'warning')
+                    return redirect(url_for('main.pricing'))
+            
+            # Check if the subscription is active and the plan is one of the allowed plans
+            if user_subscription and user_subscription.status == 'active':
+                if user_subscription.plan in plans:
+                    return f(*args, **kwargs) # Access granted
+                else:
+                    # Active subscription, but not the right plan
+                    flash(f'This feature requires a "{", ".join(plans)}" subscription. Your current plan is "{user_subscription.plan}".', 'warning')
+                    return redirect(url_for('main.pricing'))
+            else:
+                # Subscription exists but is not active (e.g., 'past_due', 'canceled')
+                # Or it's a 'free' user case not covered by 'free' in plans.
+                if 'free' in plans and (not user_subscription or user_subscription.plan == 'free'):
+                     # If 'free' is allowed and user is effectively free (no subscription or free plan)
+                    return f(*args, **kwargs)
+
+                status_message = f"Your subscription status is \"{user_subscription.status if user_subscription else 'not active'}\"."
+                flash(f'Access denied. {status_message} This feature requires a "{", ".join(plans)}" subscription.', 'warning')
                 return redirect(url_for('main.pricing'))
                 
-            return f(*args, **kwargs)
         return wrapped
     return decorator
 

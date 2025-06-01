@@ -326,25 +326,61 @@ def webhook():
 def handle_subscription_updated(subscription):
     try:
         # Find subscription in database
-        sub = Subscription.query.filter_by(stripe_subscription_id=subscription.id).first()
-        if sub:
-            # Update status
-            sub.status = subscription.status
+        db_subscription_record = Subscription.query.filter_by(stripe_subscription_id=subscription.id).first()
+        
+        if db_subscription_record:
+            # Update status in our Subscription table
+            db_subscription_record.status = subscription.status
             
-            # Update end date if applicable
-            if subscription.current_period_end:
-                end_date = datetime.fromtimestamp(subscription.current_period_end)
-                sub.ends_at = end_date
+            # Retrieve Stripe Product to get our plan name from metadata
+            try:
+                stripe_plan_object = subscription.items.data[0].plan # Get the plan item from the subscription
+                stripe_product_id = stripe_plan_object.product
+                stripe_product_object = stripe.Product.retrieve(stripe_product_id)
+                plan_name = stripe_product_object.metadata.get('plan')
                 
-                # Update user subscription end date
-                user = User.query.get(sub.user_id)
-                if user:
-                    user.subscription_ends_at = end_date
+                if plan_name:
+                    db_subscription_record.plan = plan_name
+                    logger.info(f"Webhook: Updated plan to '{plan_name}' for subscription {subscription.id}")
+                else:
+                    logger.warning(f"Webhook: Plan name not found in Stripe Product metadata for product {stripe_product_id}")
+            except Exception as e:
+                logger.error(f"Webhook: Error retrieving plan name from Stripe Product: {str(e)}")
+                plan_name = db_subscription_record.plan # Fallback to existing plan if retrieval fails
+
+            # Update end date if applicable
+            new_ends_at = None
+            if subscription.current_period_end:
+                new_ends_at = datetime.fromtimestamp(subscription.current_period_end)
+                db_subscription_record.ends_at = new_ends_at
             
+            # Update User model
+            user = User.query.get(db_subscription_record.user_id)
+            if user:
+                # Update user's subscription_status only if the subscription is active or trialing
+                if subscription.status in ['active', 'trialing']:
+                    user.subscription_status = plan_name 
+                elif subscription.status in ['canceled', 'unpaid', 'past_due'] and user.subscription_status != 'free':
+                    # If subscription is no longer active, and user wasn't already free, consider downgrading
+                    # This logic might be refined based on grace periods or specific business rules
+                    # For now, if it's canceled or unpaid, and they had a plan, revert to 'free'
+                    # This overlaps with handle_subscription_deleted but good to have a fallback
+                    if subscription.status == 'canceled': # Explicitly handled by handle_subscription_deleted
+                        pass # Let handle_subscription_deleted manage 'free' status for cancellations
+                    else: # For unpaid, past_due
+                        user.subscription_status = 'free' # Or a specific status like 'payment_issue'
+                        logger.info(f"Webhook: Set user {user.id} status to 'free' due to subscription status '{subscription.status}'")
+
+                if new_ends_at:
+                    user.subscription_ends_at = new_ends_at
+                logger.info(f"Webhook: Updated user {user.id} with plan '{user.subscription_status}' and ends_at '{user.subscription_ends_at}'")
+
+            db_subscription_record.updated_at = datetime.utcnow()
             db.session.commit()
+            logger.info(f"Webhook: Successfully processed 'customer.subscription.updated' for {subscription.id}")
             
     except Exception as e:
-        logger.error(f"Error handling subscription update: {str(e)}")
+        logger.error(f"Error handling subscription update: {str(e)}", exc_info=True)
 
 def handle_subscription_deleted(subscription):
     try:
@@ -410,9 +446,23 @@ def handle_payment_failed(invoice):
         )
         db.session.add(payment)
         
-        # Update subscription status
+        # Update subscription status in our Subscription table
         sub.status = 'past_due'
+        
+        # Update User model status
+        user = User.query.get(sub.user_id)
+        if user and user.subscription_status != 'free': # Only update if they weren't already free
+            # Option 1: Revert to 'free'
+            user.subscription_status = 'free'
+            # Option 2: Set a specific status like 'payment_failed' or 'past_due'
+            # user.subscription_status = 'past_due' # This would require handling this status in permission checks
+            
+            # For now, reverting to 'free' is the safest to prevent unintended access
+            logger.info(f"Webhook: Set user {user.id} status to 'free' due to 'invoice.payment_failed'")
+        
+        sub.updated_at = datetime.utcnow()
         db.session.commit()
+        logger.info(f"Webhook: Successfully processed 'invoice.payment_failed' for subscription {sub.stripe_subscription_id}, user {user.id if user else 'unknown'}")
         
     except Exception as e:
-        logger.error(f"Error handling payment failure: {str(e)}")
+        logger.error(f"Error handling payment failure: {str(e)}", exc_info=True)

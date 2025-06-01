@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request, current_app
 from flask_login import login_required, current_user
 from datetime import datetime, timedelta
+from utils import requires_subscription # Ajout de l'import
 from models import Analysis, User, AnalysisDetail # AnalysisDetail ajouté
 from collections import defaultdict
 from app import db
@@ -11,6 +12,7 @@ api_bp = Blueprint('api', __name__)
 
 @api_bp.route('/analyses') 
 @login_required
+@requires_subscription(['enterprise'])
 def get_analyses():
     """Get all analyses for current user"""
     try:
@@ -28,6 +30,7 @@ def get_analyses():
 
 @api_bp.route('/analyses/<int:analysis_id>') 
 @login_required
+@requires_subscription(['enterprise'])
 def get_analysis_details_route(analysis_id): # Renommé pour éviter conflit avec une potentielle variable 'analysis'
     """Get specific analysis details"""
     try:
@@ -54,6 +57,7 @@ def get_analysis_details_route(analysis_id): # Renommé pour éviter conflit ave
 # NOUVELLE ROUTE POUR LES RECOMMANDATIONS IA
 @api_bp.route('/ai-recommendations/<int:analysis_id>')
 @login_required
+@requires_subscription(['enterprise']) # Cohérent avec API Access pour Enterprise, la logique interne est plus permissive mais sera court-circuitée si non-enterprise
 def ai_recommendations_route(analysis_id):
     """Get AI-powered SEO recommendations for a specific analysis."""
     try:
@@ -114,6 +118,7 @@ def ai_recommendations_route(analysis_id):
 
 @api_bp.route('/profile/stats') 
 @login_required
+@requires_subscription(['enterprise'])
 def profile_stats():
     # ... (code existant inchangé)
     try:
@@ -140,6 +145,7 @@ def profile_stats():
 
 @api_bp.route('/dashboard/summary') 
 @login_required
+@requires_subscription(['enterprise'])
 def dashboard_summary():
     # ... (code existant inchangé)
     try:
@@ -155,17 +161,65 @@ def dashboard_summary():
 
 @api_bp.route('/analyze', methods=['POST']) 
 @login_required
+@requires_subscription(['enterprise'])
 def analyze_url_route(): # Renommé
     # ... (code existant inchangé)
     try:
-        data = request.get_json(); url = data.get('url'); analysis_type = data.get('analysis_type', 'partial')
-        if not url: return jsonify({'error': 'URL is required'}), 400
-        if current_user.subscription_status == 'free':
+        data = request.get_json()
+        url = data.get('url')
+        analysis_type = data.get('analysis_type', 'partial')
+
+        if not url:
+            return jsonify({'error': 'URL is required'}), 400
+
+        # Monthly analysis limits (consistent with main_routes.py)
+        # Note: This route is already protected by @requires_subscription(['enterprise'])
+        # So, this internal limit check for 'free' or 'basic' will likely not be hit
+        # unless the decorator logic changes or fails.
+        # However, for consistency in the function's structure:
+        user_plan = getattr(current_user, 'subscription_status', 'free')
+
+        ANALYSIS_LIMITS = {
+            'free': 5,
+            'basic': 25,
+        }
+
+        if user_plan in ANALYSIS_LIMITS:
+            limit = ANALYSIS_LIMITS[user_plan]
             month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-            if Analysis.query.filter(Analysis.user_id == current_user.id, Analysis.created_at >= month_start).count() >= 5:
-                return jsonify({'error': 'Monthly analysis limit reached. Please upgrade your plan.'}), 403
-        analysis_obj = Analysis(url=url, analysis_type=analysis_type, user_id=current_user.id) # Renommé
-        db.session.add(analysis_obj); db.session.commit()
+            monthly_count = Analysis.query.filter(
+                Analysis.user_id == current_user.id,
+                Analysis.created_at >= month_start
+            ).count()
+            
+            if monthly_count >= limit:
+                return jsonify({'error': f'Monthly analysis limit of {limit} reached for your {user_plan} plan. Please upgrade your plan or wait until next month.'}), 403
+        
+        # Check analysis type permissions based on plan
+        # Note: This route is already protected by @requires_subscription(['enterprise'])
+        # So, user_plan here should ideally be 'enterprise' if decorator works.
+        # This internal check adds another layer or would be primary if decorator was different.
+        ANALYSIS_TYPE_PERMISSIONS = {
+            'meta': ['free', 'basic', 'premium', 'enterprise'],
+            'partial': ['basic', 'premium', 'enterprise'],
+            'complete': ['premium', 'enterprise'],
+            'deep': ['enterprise'] 
+        }
+
+        allowed_plans_for_requested_type = ANALYSIS_TYPE_PERMISSIONS.get(analysis_type)
+
+        if allowed_plans_for_requested_type is None:
+            return jsonify({'error': f"Invalid analysis type requested: {analysis_type}"}), 400
+
+        # user_plan was defined above for monthly limits.
+        # If this route is strictly 'enterprise' due to decorator, this check might seem redundant
+        # for 'enterprise' users but is good practice.
+        if user_plan not in allowed_plans_for_requested_type:
+            return jsonify({'error': f"The requested analysis type '{analysis_type}' is not available for your current plan ('{user_plan}'). Please upgrade your plan."}), 403
+
+        analysis_obj = Analysis(url=url, analysis_type=analysis_type, user_id=current_user.id)
+        db.session.add(analysis_obj)
+        db.session.commit()
         return jsonify({'id': analysis_obj.id, 'status': 'created', 'message': 'Analysis started...'})
     except Exception as e:
         db.session.rollback(); current_app.logger.error(f"Error in /api/analyze: {str(e)}", exc_info=True)
@@ -173,6 +227,7 @@ def analyze_url_route(): # Renommé
 
 @api_bp.route('/user/profile') 
 @login_required
+@requires_subscription(['enterprise'])
 def user_profile_route(): # Renommé
     # ... (code existant inchangé)
     try:

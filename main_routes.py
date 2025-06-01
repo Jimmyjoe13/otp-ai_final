@@ -49,20 +49,64 @@ def analyze():
             if not url:
                 flash('URL is required', 'danger')
                 return redirect(url_for('main.analyze'))
+
+            # Monthly analysis limits
+            # Ensure subscription_status is reliable or use current_user.subscription.plan
+            # For now, using current_user.subscription_status as per existing logic
+            # but ideally this would use the more robust current_user.subscription.plan if decorator is not used here.
+            # The decorator `requires_subscription` would handle non-active subscriptions.
+            # If we assume an active subscription here (or 'free'), we can check limits.
             
-            if current_user.subscription_status == 'free':
+            # It's better to rely on current_user.subscription.plan if available and status is active
+            # However, to minimize changes to this specific block first, I'll use subscription_status
+            # and assume it's correctly updated by Phase 1.
+            
+            user_plan = getattr(current_user, 'subscription_status', 'free') # Default to 'free' if somehow not set
+            
+            # Define limits
+            ANALYSIS_LIMITS = {
+                'free': 5,
+                'basic': 25,
+                # 'premium': float('inf'), # No limit
+                # 'enterprise': float('inf') # No limit
+            }
+
+            if user_plan in ANALYSIS_LIMITS:
+                limit = ANALYSIS_LIMITS[user_plan]
                 month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
                 monthly_count = Analysis.query.filter(
                     Analysis.user_id == current_user.id,
                     Analysis.created_at >= month_start
                 ).count()
-                if monthly_count >= 5:
-                    flash('Monthly analysis limit reached. Please upgrade your plan.', 'warning')
+                
+                if monthly_count >= limit:
+                    flash(f'Monthly analysis limit of {limit} reached for your {user_plan} plan. Please upgrade your plan or wait until next month.', 'warning')
                     return redirect(url_for('main.pricing'))
+
+            # Check analysis type permissions based on plan
+            # Assumes 'meta' is a basic analysis type available to all if not specified otherwise
+            # 'deep' is assumed for "IA d'analyse sémantique avancée"
+            ANALYSIS_TYPE_PERMISSIONS = {
+                'meta': ['free', 'basic', 'premium', 'enterprise'],
+                'partial': ['basic', 'premium', 'enterprise'],
+                'complete': ['premium', 'enterprise'],
+                'deep': ['enterprise'] 
+            }
+
+            allowed_plans_for_requested_type = ANALYSIS_TYPE_PERMISSIONS.get(analysis_type)
+
+            if allowed_plans_for_requested_type is None:
+                # This case should ideally not be reached if analysis_type is validated from a fixed set of options in the form
+                flash(f"Invalid analysis type requested: {analysis_type}.", 'danger')
+                return redirect(url_for('main.analyze'))
+
+            if user_plan not in allowed_plans_for_requested_type:
+                flash(f"The requested analysis type '{analysis_type}' is not available for your current plan ('{user_plan}'). Please upgrade your plan.", 'warning')
+                return redirect(url_for('main.pricing'))
             
             # Appeler le véritable analyseur SEO
             try:
-                logger.info(f"Starting SEO analysis for {url} (type: {analysis_type}) by user {current_user.id}")
+                logger.info(f"Starting SEO analysis for {url} (type: {analysis_type}) by user {current_user.id} (plan: {user_plan})")
                 seo_results = perform_seo_analysis(url, analysis_type)
                 logger.info(f"SEO analysis completed for {url}. Overall score: {seo_results['scores'].get('overall')}")
             except Exception as analysis_err:
