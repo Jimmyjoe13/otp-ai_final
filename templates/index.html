@@ -12,11 +12,11 @@
                 <p class="lead mb-4">{{ _('general.welcome') }}</p>
                 <div class="d-grid gap-2 d-md-flex">
                     {% if current_user.is_authenticated %}
-                    <a href="/analyze" class="btn btn-primary btn-lg px-4">{{ _('analyze.analyze_button') }}</a>
-                    <a href="/dashboard" class="btn btn-outline-light btn-lg px-4">{{ _('navigation.dashboard') }}</a>
+                    <a href="{{ url_for('main.analyze') }}" class="btn btn-primary btn-lg px-4">{{ _('analyze.analyze_button') }}</a>
+                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-light btn-lg px-4">{{ _('navigation.dashboard') }}</a>
                     {% else %}
-                    <a href="/register" class="btn btn-primary btn-lg px-4">{{ _('auth.register') }}</a>
-                    <a href="/login" class="btn btn-outline-light btn-lg px-4">{{ _('auth.login') }}</a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg px-4">{{ _('auth.register') }}</a>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg px-4">{{ _('auth.login') }}</a>
                     {% endif %}
                 </div>
             </div>
@@ -164,9 +164,9 @@
         
         <div class="text-center mt-5 reveal-on-scroll">
             {% if current_user.is_authenticated %}
-            <a href="/analyze" class="btn btn-primary btn-lg">{{ _('homepage.analyze_now') }}</a>
+            <a href="{{ url_for('main.analyze') }}" class="btn btn-primary btn-lg">{{ _('homepage.analyze_now') }}</a>
             {% else %}
-            <a href="/register" class="btn btn-primary btn-lg">{{ _('homepage.get_started_free') }}</a>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">{{ _('homepage.get_started_free') }}</a>
             {% endif %}
         </div>
     </div>
@@ -273,10 +273,10 @@
             <p class="lead mb-4">{{ _('homepage.start_improving') }}</p>
             <div class="d-grid gap-2 d-md-flex justify-content-md-center">
                 {% if current_user.is_authenticated %}
-                <a href="/analyze" class="btn btn-light btn-lg px-5">{{ _('homepage.analyze_now') }}</a>
+                <a href="{{ url_for('main.analyze') }}" class="btn btn-light btn-lg px-5">{{ _('homepage.analyze_now') }}</a>
                 {% else %}
-                <a href="/register" class="btn btn-light btn-lg px-5">{{ _('homepage.sign_up_free') }}</a>
-                <a href="/pricing" class="btn btn-outline-light btn-lg px-5">{{ _('homepage.see_pricing') }}</a>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg px-5">{{ _('homepage.sign_up_free') }}</a>
+                <a href="{{ url_for('main.pricing') }}" class="btn btn-outline-light btn-lg px-5">{{ _('homepage.see_pricing') }}</a>
                 {% endif %}
             </div>
         </div>
