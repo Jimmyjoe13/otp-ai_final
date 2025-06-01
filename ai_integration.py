@@ -154,5 +154,23 @@ def format_analysis_for_ai(url, analysis_type, analysis_details):
                     logger.warning(f"Skipping malformed detail item: {key} -> {data}")
         else:
             sections.append(f"\n== NO {category.upper()} ANALYSIS DETAILS PROVIDED ==")
+
+    # Add semantic analysis details if present
+    if 'semantic' in analysis_details and analysis_details['semantic']:
+        sections.append(f"\n== SEMANTIC ANALYSIS ==")
+        for component_key, data in sorted(analysis_details['semantic'].items()):
+            # Ensure data is a dictionary and has expected keys
+            if isinstance(data, dict) and 'status' in data:
+                component_name = component_key.replace('_', ' ').capitalize()
+                score_info = f"(Score: {data.get('score', 'N/A')}/100)" if 'score' in data else ""
+                sections.append(f"- {component_name}: {data['status'].upper()} {score_info}")
+                if 'description' in data and data['description']:
+                    sections.append(f"  Description: {data['description']}")
+                # 'recommendation' field in semantic details often contains the 'depth_assessment' or error message
+                if 'recommendation' in data and data['recommendation']:
+                    sections.append(f"  Assessment/Details: {data['recommendation']}")
+            else:
+                logger.warning(f"Skipping malformed semantic detail item: {component_key} -> {data}")
+        sections.append("==") # End semantic analysis section
             
     return "\n".join(sections)

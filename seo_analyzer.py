@@ -3,6 +3,7 @@ import requests
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 import logging
+from ai_integration import analyze_content_semantics # Importation ajoutée
 
 logger = logging.getLogger(__name__)
 
@@ -80,10 +81,60 @@ def analyze_url(url, analysis_type='meta'):
         if analysis_type in ['complete', 'deep']:
             scores_to_average.append(results['scores']['technical'])
         
+        # Semantic analysis for 'deep' type
+        if analysis_type == 'deep':
+            logger.info(f"Extracting text for semantic analysis from {url}")
+            paragraphs = soup.find_all('p')
+            extracted_text_for_semantic_analysis = " ".join(p.get_text(separator=' ', strip=True) for p in paragraphs if p.get_text(strip=True))
+            
+            if extracted_text_for_semantic_analysis.strip():
+                try:
+                    logger.info(f"Performing semantic analysis for {url} (type: deep)")
+                    semantic_results = analyze_content_semantics(extracted_text_for_semantic_analysis)
+                    logger.debug(f"Semantic analysis results for {url}: {semantic_results}")
+
+                    if 'semantic' not in results['details']:
+                        results['details']['semantic'] = {}
+                    
+                    results['details']['semantic']['relevance'] = {
+                        'status': 'info', 
+                        'score': semantic_results.get('relevance_score', 0), 
+                        'description': f"AI Semantic Relevance Score: {semantic_results.get('relevance_score', 'N/A')}/100.",
+                        'recommendation': semantic_results.get('depth_assessment', 'No specific depth assessment provided.')
+                    }
+                    # Potentially add other semantic details if returned by analyze_content_semantics
+                except Exception as sem_err:
+                    logger.error(f"Error during semantic analysis for {url}: {str(sem_err)}", exc_info=True)
+                    if 'semantic' not in results['details']:
+                        results['details']['semantic'] = {}
+                    results['details']['semantic']['error'] = {
+                        'status': 'error', 
+                        'score': 0, 
+                        'description': "Semantic analysis could not be performed.",
+                        'recommendation': str(sem_err)
+                    }
+            else:
+                logger.warning(f"No significant text extracted from <p> tags for semantic analysis of {url}")
+                if 'semantic' not in results['details']:
+                    results['details']['semantic'] = {}
+                results['details']['semantic']['no_text'] = {
+                    'status': 'warning',
+                    'score': 0, # Or a neutral score
+                    'description': "No significant text content found in <p> tags for semantic analysis.",
+                    'recommendation': "Ensure the page has substantial textual content in paragraph tags for semantic analysis."
+                }
+
+        # Calculate overall score
+        scores_to_average = [results['scores']['meta']]
+        if analysis_type in ['partial', 'complete', 'deep']:
+            scores_to_average.append(results['scores']['content'])
+        if analysis_type in ['complete', 'deep']:
+            scores_to_average.append(results['scores']['technical'])
+        
         if scores_to_average:
             results['scores']['overall'] = sum(scores_to_average) // len(scores_to_average)
         else:
-            results['scores']['overall'] = 0 # Devrait toujours y avoir au moins le score méta
+            results['scores']['overall'] = 0 # Should always have at least meta score
 
         logger.info(f"Analysis for {url} completed. Overall score: {results['scores']['overall']}")
         return results
