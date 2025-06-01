@@ -3,6 +3,7 @@ import logging
 import requests # Ajout de l'import requests
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
+from utils import requires_subscription # Importation du décorateur
 from models import Analysis
 
 # Configure logging
@@ -22,6 +23,7 @@ OPTY_BOT_WEBHOOK_AUTH_TOKEN = os.environ.get("OPTY_BOT_WEBHOOK_AUTH_TOKEN", None
 
 @chatbot_bp.route('/chatbot', methods=['POST']) 
 @login_required
+@requires_subscription(['premium', 'enterprise']) # Restriction d'accès
 def chatbot_route():
     """
     Chat API endpoint that forwards requests to an external Opty-bot webhook.
